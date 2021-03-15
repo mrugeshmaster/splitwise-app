@@ -9,6 +9,9 @@ const createGroup = require('./routes/groups/createGroup');
 const inviteMember = require('./routes/groups/inviteMember');
 const invitations = require('./routes/groups/invitations');
 const acceptInvite = require('./routes/groups/acceptInvite');
+const addbill = require('./routes/addbill');
+const balances = require('./routes/balances');
+const settle = require('./routes/settle');
 
 app.use('/api/ping', ping);
 app.use('/api/login', login);
@@ -19,6 +22,9 @@ app.use('/api/createGroup', createGroup);
 app.use('/api/inviteMember', inviteMember);
 app.use('/api/invitations', invitations);
 app.use('/api/acceptInvite', acceptInvite);
+app.use('/api/addbill', addbill);
+app.use('/api/balances', balances);
+app.use('/api/settle', settle);
 
 const port = process.env.PORT || 3001;
 
