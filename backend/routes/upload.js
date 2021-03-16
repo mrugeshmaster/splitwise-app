@@ -72,4 +72,17 @@ router.get('/:userId', (req, res) => {
     });
 });
 
+router.get('/group/:group_image', (req, res) => {
+  console.log('Inside image GET request');
+  console.log('Req Body : ', req.body);
+  // const sql = `SELECT image FROM users WHERE user_id=${req.params.userId};`;
+  // console.log('SQL File : ', sql);
+  const image = `${path.join(__dirname, '..')}/public/storage/groups/${req.params.group_image}`;
+  if (fs.existsSync(image)) {
+    res.sendFile(image);
+  } else {
+    res.sendFile(`${path.join(__dirname, '..')}/public/storage/groups/groupPlaceholder.png`);
+  }
+});
+
 module.exports = router;

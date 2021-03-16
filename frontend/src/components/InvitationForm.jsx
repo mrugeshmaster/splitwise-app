@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { Component } from 'react';
 import { Col, Form, Button } from 'react-bootstrap';
+import { X } from 'react-bootstrap-icons';
 import apiHost from '../config';
 
 class InvitationForm extends Component {
@@ -45,13 +46,20 @@ class InvitationForm extends Component {
       <div>
         <Form>
           <Form.Row>
-            <Form.Group as={Col} md="5">
+            <Form.Group as={Col} md="4">
               <Form.Control type="text" name="invitationName" placeholder="Name" onChange={this.onChangeInvitationName} />
             </Form.Group>
-            <Form.Group as={Col} md="5">
+            <Form.Group as={Col} md="4">
               <Form.Control type="email" name="invitationEmail" placeholder="Email" onChange={this.onChangeInvitationEmail} />
             </Form.Group>
-            <Form.Group as={Col} md="2"><Button onClick={this.onInvite}>Invite</Button></Form.Group>
+            <Form.Group as={Col} md="3">
+              <Button onClick={this.onInvite}>Invite</Button>
+            </Form.Group>
+            <Form.Group as={Col} md="1">
+              <Button variant="outline-danger" id="cancel" onClick={this.props.onCancel}>
+                <X />
+              </Button>
+            </Form.Group>
           </Form.Row>
         </Form>
       </div>

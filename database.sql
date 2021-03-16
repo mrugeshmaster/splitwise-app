@@ -270,14 +270,10 @@ CREATE PROCEDURE `Group_Get` (
 )
 BEGIN
     
-    SELECT group_name 
-    FROM groups 
-    WHERE group_id IN (
-        SELECT group_id 
-        FROM groups_users 
-        WHERE user_id = in_user_id 
-        AND is_member = 'Y'
-    );
+    SELECT g.group_name, g.group_image, gu.is_member
+    FROM groups g JOIN groups_users gu
+    ON g.group_id = gu.group_id
+    WHERE gu.user_id = in_user_id;
     
 END //
 DELIMITER ;

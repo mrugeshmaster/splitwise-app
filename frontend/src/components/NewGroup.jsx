@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React, { Component } from 'react';
 import {
-  Row, Col, Form, Button, Image,
+  Row, Col, Form, Button, Image, Alert,
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -35,11 +35,18 @@ class NewGroup extends Component {
     axios.post(`${apiHost}/api/createGroup`, data)
       .then((response) => {
         this.setState({
-          groupCreated: response.data.message,
+          message: response.data.message,
         });
+        console.log(response);
       }).catch((err) => {
-        console.log(err);
+        this.setState({
+          message: err.response.data.message,
+        });
       });
+  }
+
+  onCancel = () => {
+    this.setState((prevState) => ({ invitationListSize: prevState.invitationListSize - 1 }));
   }
 
   onAddInvitationForm = () => {
@@ -50,21 +57,24 @@ class NewGroup extends Component {
   render() {
     let selfMember = null;
     const invitationForms = [];
-    if (this.state.groupCreated === 'GROUP_CREATED') {
-      selfMember = (
-        <Form.Row>
-          <Form.Group as={Col} md="6">
-            <Form.Control type="text" name="invite_name" placeholder={localStorage.getItem('name')} onChange={this.onAddPersonName} disabled />
-          </Form.Group>
-          <Form.Group as={Col} md="6">
-            <Form.Control type="email" name="invite_email" placeholder={localStorage.getItem('email')} onChange={this.onAddPersonEmail} disabled />
-          </Form.Group>
-        </Form.Row>
-      );
+    let errorMessage = null;
+
+    if (this.state.message === 'DUPLICATE_GROUP') {
+      errorMessage = <Alert variant="danger">Group Name Taken. Please enter unique group name.</Alert>;
     }
+    selfMember = (
+      <Form.Row>
+        <Form.Group as={Col} md="6">
+          <Form.Control type="text" name="invite_name" placeholder={localStorage.getItem('name')} disabled />
+        </Form.Group>
+        <Form.Group as={Col} md="6">
+          <Form.Control type="email" name="invite_email" placeholder={localStorage.getItem('email')} disabled />
+        </Form.Group>
+      </Form.Row>
+    );
 
     for (let i = 1; i <= this.state.invitationListSize; i += 1) {
-      invitationForms.push(<InvitationForm groupName={this.state.groupName} />);
+      invitationForms.push(<InvitationForm groupName={this.state.groupName} onCancel={this.onCancel} />);
     }
 
     return (
@@ -77,16 +87,22 @@ class NewGroup extends Component {
             </Col>
             <Col md={{ span: 3 }}>
               <h5>START A NEW GROUP</h5>
-              <Form inline onSubmit={this.onCreate}>
-                <Form.Control
-                  type="text"
-                  name="groupName"
-                  value={this.state.groupName}
-                  onChange={this.onChange}
-                  required
-                />
-                {'\u00A0'}
-                <Button type="submit">Create</Button>
+              {errorMessage}
+              <Form onSubmit={this.onCreate}>
+                <Form.Row>
+                  <Form.Group as={Col} md="8">
+                    <Form.Control
+                      type="text"
+                      name="groupName"
+                      value={this.state.groupName}
+                      onChange={this.onChange}
+                      required
+                    />
+                  </Form.Group>
+                  <Form.Group as={Col} md="3">
+                    <Button type="submit">Create</Button>
+                  </Form.Group>
+                </Form.Row>
               </Form>
               <hr />
               <h5>GROUP MEMBERS</h5>

@@ -3,24 +3,25 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../pool.js');
 
-router.post('/', (req, res) => {
-  console.log('Inside Accept Invite POST Request');
-  console.log(req.body);
-  const sql = `CALL Group_Member_Invite_Accept('${req.body.user_id}', '${req.body.group_name}');`;
+router.get('/:user_id', (req, res) => {
+  console.log('Inside Group Get Request');
+  // console.log('Req Body : ', req.body);
+  const sql = `CALL Group_Get('${req.params.user_id}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];
-    console.log(result);
-    if (result && result.length > 1 && result[0][0].flag === 'INVITE_ACCEPTED') {
+    if (result && result.length > 0) {
+      // const invitationsObj = []
+      // console.log(result);
       res.writeHead(200, {
         'Content-Type': 'application/json',
       });
-      res.end(JSON.stringify({ message: result[0][0].flag }));
+      res.end(JSON.stringify(result[0]));
     } else {
       res.writeHead(401, {
         'Content-Type': 'application/json',
       });
-      res.end(JSON.stringify({ message: 'SOMETHING_WENT_WRONG' }));
+      res.end(JSON.stringify({ message: 'NO_GROUPS' }));
     }
   }).catch((err) => {
     res.writeHead(500, {
