@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import axios from 'axios';
 import { USER_SIGNUP } from './constant-types';
 import apiHost from '../config';

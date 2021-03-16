@@ -48,14 +48,15 @@ class Login extends Component {
     // console.log(this.props);
     let redirectVar = null;
     let message = '';
+    // console.log(this.props.user);
     if (this.props.user && this.props.user.user_id) {
       localStorage.setItem('name', this.props.user.name);
       localStorage.setItem('email', this.props.user.email);
       localStorage.setItem('user_id', this.props.user.user_id);
       redirectVar = <Redirect to="/home" />;
-    } else if (this.props.user === 'USER_DOES_NOT_EXISTS' && this.state.login) {
+    } else if (this.props.user.message === 'USER_DOES_NOT_EXISTS' && this.state.login) {
       message = 'User Does Not Exists';
-    } else if (this.props.user === 'INCORRECT_PASSWORD' && this.state.login) {
+    } else if (this.props.user.message === 'INCORRECT_PASSWORD' && this.state.login) {
       message = 'Incorrect Password';
     }
     return (

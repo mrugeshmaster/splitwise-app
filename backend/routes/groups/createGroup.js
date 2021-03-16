@@ -7,7 +7,7 @@ router.post('/', (req, res) => {
   // console.log('Inside Create Group POST Request');
   const groupImage = req.body.group_image || 'groupPlaceholder.png';
 
-  const sql = `CALL Group_Create('${req.body.user_id}', '${req.body.group_name}', '${groupImage}');`;
+  const sql = `CALL Group_Create('${req.body.user_id}', '${req.body.groupName}', '${groupImage}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];

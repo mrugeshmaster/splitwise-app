@@ -1,8 +1,9 @@
+/* eslint-disable linebreak-style */
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import store from './store';
 import { Provider } from 'react-redux';
-import Main from './components/Main.js'
+import store from './store';
+import Main from './components/Main';
 
 function App() {
   return (

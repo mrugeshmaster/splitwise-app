@@ -63,11 +63,7 @@ CREATE TABLE `bill_transaction` (
     `user_id` INT(10) NOT NULL,
     `owed_id` INT(10) NOT NULL,
     `amount` DOUBLE NOT NULL,
-    -- `settle` VARCHAR(1),
-    -- `split_amount` INT(10) NOT NULL,
-    -- `bill_created_at` TIMESTAMP NOT NULL,
     PRIMARY KEY (`transaction_id`),
-    -- FOREIGN KEY (`bill_id`) REFERENCES `bills`(`bill_id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`),
     FOREIGN KEY (`owed_id`) REFERENCES `users`(`user_id`)
 );
@@ -147,7 +143,7 @@ CREATE PROCEDURE `SIGNUP_Post` (
 )
 BEGIN
     IF NOT EXISTS(SELECT email FROM users WHERE email = in_email) THEN
-        INSERT INTO users (name, email, password) VALUES (in_name, in_email, in_password);
+        INSERT INTO users (name, email, password, currency, language, timezone, image) VALUES (in_name, in_email, in_password, 'USD', 'English', '-08:00','userPlaceholder.png');
         SELECT 'NEW_USER_CREATED' AS flag;
     ELSE
         SELECT 'USER_ALREADY_EXISTS' AS flag;
@@ -166,7 +162,7 @@ BEGIN
     -- ELSE
     --     SELECT 0 AS flag;
     -- END IF;
-    SELECT user_id, email, password, name, phone, currency, language, timezone FROM users WHERE user_id = in_user_id;
+    SELECT user_id, email, password, name, phone, currency, language, timezone, image FROM users WHERE user_id = in_user_id;
 END //
 DELIMITER ;
 
@@ -179,7 +175,8 @@ CREATE PROCEDURE `Profile_Put` (
     in_phone VARCHAR(15),
     in_currency VARCHAR(3),
     in_language VARCHAR(255),
-    in_timezone VARCHAR(255)
+    in_timezone VARCHAR(255),
+    in_image VARCHAR(255)
 )
 BEGIN
     DECLARE count_users INT;
@@ -205,8 +202,6 @@ BEGIN
     DECLARE _group_id INT;
     IF EXISTS(SELECT group_name FROM groups WHERE group_name = TRIM(in_group_name)) THEN
         SELECT 'DUPLICATE_GROUP' AS flag;
-        -- SELECT group_id INTO _group_id FROM groups WHERE group_name = TRIM(in_group_name);
-        -- INSERT INTO groups_users (group_id, user_id, is_member) VALUES(_group_id, in_user_id, 'Y');
     ELSE
         INSERT INTO groups (group_name, group_image) VALUES (in_group_name, in_group_image);
         SELECT group_id INTO _group_id FROM groups WHERE group_name = in_group_name;
@@ -292,7 +287,6 @@ DELIMITER //
 CREATE PROCEDURE `Group_Member_Invite_Accept` (
     in_user_id INT,
     in_group_name VARCHAR(255)
-    -- in_group_image VARCHAR(255)
 )
 BEGIN
     
@@ -361,7 +355,7 @@ JOIN (
 ) AS s2;
 
 -- to get all users mapping
-SELECT DISTINCT gu2.user_id as owed_id
+SELECT DISTINCT gu2.user_id AS owed_id
 FROM groups_users gu1 
 JOIN groups_users gu2 
 ON gu1.user_id <> gu2.user_id AND gu1.group_id = gu2.group_id;

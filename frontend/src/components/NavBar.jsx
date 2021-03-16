@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-  Navbar, Nav, Dropdown, Image,
+  Navbar, Nav, Dropdown, Image, Col,
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -38,7 +38,7 @@ class NavBar extends Component {
 
         <Dropdown.Menu>
           <Dropdown.Item><Link to="/profile" className="nav-link">Your Account</Link></Dropdown.Item>
-          <Dropdown.Item><Link to="/profile" className="nav-link">Create a Group</Link></Dropdown.Item>
+          <Dropdown.Item><Link to="/newgroup" className="nav-link">Create a Group</Link></Dropdown.Item>
           <Dropdown.Item><Link to="/" className="nav-link" onClick={this.handleLogout}>Log out</Link></Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -64,12 +64,18 @@ class NavBar extends Component {
     return (
       <div>
         <Navbar bg="light" variant="light">
+          <Col xs lg="1">
+            {'\u00A0'}
+          </Col>
           <Navbar.Brand>
             <Nav.Link href="/">
               <img src={splitwiseLogo} width="100" height="auto" className="d-inline-block align-top" alt="Splitwise" />
             </Nav.Link>
           </Navbar.Brand>
           {navUser}
+          <Col xs lg="1">
+            {'\u00A0'}
+          </Col>
         </Navbar>
       </div>
     );

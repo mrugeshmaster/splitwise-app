@@ -12,6 +12,7 @@ const acceptInvite = require('./routes/groups/acceptInvite');
 const addbill = require('./routes/addbill');
 const balances = require('./routes/balances');
 const settle = require('./routes/settle');
+const recentactivity = require('./routes/recentactivity');
 
 app.use('/api/ping', ping);
 app.use('/api/login', login);
@@ -25,6 +26,7 @@ app.use('/api/acceptInvite', acceptInvite);
 app.use('/api/addbill', addbill);
 app.use('/api/balances', balances);
 app.use('/api/settle', settle);
+app.use('/api/recentactivity', recentactivity);
 
 const port = process.env.PORT || 3001;
 

@@ -8,10 +8,10 @@ const middleware = [thunk];
 
 const storeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
-    rootReducer,
-    initState,
-    storeEnhancers(applyMiddleware(...middleware))
-  );
+  rootReducer,
+  initState,
+  storeEnhancers(applyMiddleware(...middleware)),
+);
 
 // const store = createStore(
 //     rootReducer,

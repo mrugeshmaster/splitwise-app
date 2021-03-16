@@ -4,9 +4,9 @@ const router = express.Router();
 const pool = require('../../pool.js');
 
 router.post('/', (req, res) => {
-  // console.log('Inside Group Invite Member POST Request');
-
-  const sql = `CALL Group_Member_Invite('${req.body.email}', '${req.body.group_name}');`;
+  console.log('Inside Group Invite Member POST Request');
+  console.log(req.body);
+  const sql = `CALL Group_Member_Invite('${req.body.invitationEmail}', '${req.body.groupName}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];
