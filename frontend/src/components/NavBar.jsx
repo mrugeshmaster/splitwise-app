@@ -28,10 +28,9 @@ class NavBar extends Component {
 
     nameDropDown = (
       <Dropdown>
-        <Dropdown.Toggle variant="success" id="dropdown-basic">
+        <Dropdown.Toggle variant="outline-success" id="dropdown-basic">
           <Image src={userIcon} style={{ width: 20, height: 'auto' }} />
-          {' '}
-&nbsp; &nbsp; Hi,
+&nbsp;Hi,
           {this.state.name}
           !
         </Dropdown.Toggle>

@@ -244,9 +244,9 @@ sp: BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS `Group_Member_Invite_Display`;
+DROP PROCEDURE IF EXISTS `Group_List_Get`;
 DELIMITER //
-CREATE PROCEDURE `Group_Member_Invite_Display` (
+CREATE PROCEDURE `Group_List_Get` (
     in_user_id INT
 )
 BEGIN
@@ -257,7 +257,7 @@ BEGIN
         SELECT group_id 
         FROM groups_users 
         WHERE user_id = in_user_id 
-        AND is_member = 'N'
+        AND is_member = 'Y'
     );
     
 END //
@@ -308,6 +308,7 @@ BEGIN
             b.bill_amount, 
             g.group_name, 
             b.bill_paid_by, 
+            paid_by.name as paid_by_name,
             gu.user_id,
             u.name,
             CASE 
@@ -331,7 +332,59 @@ BEGIN
         FROM groups_users gu
         GROUP BY group_id
     ) gu_count ON b.group_id = gu_count.group_id
+    LEFT JOIN (
+        SELECT DISTINCT b.bill_paid_by, 
+                u.name 
+        FROM users u JOIN bills b ON u.user_id = b.bill_paid_by
+    ) paid_by ON b.bill_paid_by = paid_by.bill_paid_by
     WHERE u.user_id = in_user_id
+    ORDER BY b.bill_created_at DESC ;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `Get_Group_Details`;
+DELIMITER //
+CREATE PROCEDURE `Get_Group_Details` (
+    in_user_id INT,
+    in_group_name VARCHAR(255)
+)
+BEGIN
+    SELECT b.bill_id, 
+            b.bill_name,
+            b.bill_amount, 
+            g.group_name, 
+            b.bill_paid_by, 
+            paid_by.name as paid_by_name,
+            gu.user_id,
+            u.name,
+            CASE 
+                WHEN gu.user_id = b.bill_paid_by 
+                THEN 'GET' 
+                ELSE 'PAY' 
+            END AS pay_get, 
+            CASE 
+                WHEN gu.user_id = b.bill_paid_by 
+                THEN (b.bill_amount / gu_count.no_of_users) *  (gu_count.no_of_users - 1)
+                ELSE (b.bill_amount / (gu_count.no_of_users))
+            END AS split_amount,
+            b.bill_created_at
+    FROM bills b
+    LEFT JOIN groups g ON b.group_id = g.group_id
+    LEFT JOIN groups_users gu ON b.group_id = gu.group_id
+    LEFT JOIN users u ON gu.user_id = u.user_id 
+    LEFT JOIN (
+        SELECT count(user_id) AS no_of_users,
+                group_id
+        FROM groups_users gu
+        GROUP BY group_id
+    ) gu_count ON b.group_id = gu_count.group_id
+    LEFT JOIN (
+        SELECT DISTINCT b.bill_paid_by, 
+                u.name 
+        FROM users u JOIN bills b ON u.user_id = b.bill_paid_by
+    ) paid_by ON b.bill_paid_by = paid_by.bill_paid_by
+    WHERE u.user_id = in_user_id
+    AND g.group_name = in_group_name
     ORDER BY b.bill_created_at DESC ;
 END //
 DELIMITER ;

@@ -17,20 +17,15 @@ class GroupInvitation extends Component {
   }
 
   onAcceptInvite = () => {
-    console.log('Inside Accept Invite');
-    // console.log(`Groups: ${JSON.stringify(groupInvite)}`);
     const data = {
       user_id: localStorage.getItem('user_id'),
       group_name: this.state.group_name,
     };
     axios.post(`${apiHost}/api/acceptInvite`, data)
       .then((response) => {
-        console.log(`Data Message : ${response.data.message}`);
-        // this.props.onAcceptInvite(this.state.group_name);
         if (response.data.message) {
           this.setState({
             message: response.data.message,
-            // acceptedGroupName: this.state.group_ame,
           });
           this.props.onUpdateInvitation(this.props.groupInvite);
         }
@@ -50,6 +45,9 @@ class GroupInvitation extends Component {
           <Card.Body>
             <Card.Title>{groupInvitation.group_name}</Card.Title>
             <Button variant="primary" onClick={this.onAcceptInvite}>Accept Invite</Button>
+            {'\u00A0'}
+            {'\u00A0'}
+            <Button variant="danger" onClick={this.onAcceptInvite}>Reject Invite</Button>
           </Card.Body>
         </Card>
       );

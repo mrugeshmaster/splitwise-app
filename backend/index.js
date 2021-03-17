@@ -14,6 +14,7 @@ const balances = require('./routes/balances');
 const settle = require('./routes/settle');
 const recentactivity = require('./routes/recentactivity');
 const getGroups = require('./routes/groups/getGroups');
+const groupdetails = require('./routes/groups/groupdetails');
 
 app.use('/api/ping', ping);
 app.use('/api/login', login);
@@ -29,6 +30,7 @@ app.use('/api/balances', balances);
 app.use('/api/settle', settle);
 app.use('/api/recentactivity', recentactivity);
 app.use('/api/getGroups', getGroups);
+app.use('/api/groupdetails', groupdetails);
 
 const port = process.env.PORT || 3001;
 

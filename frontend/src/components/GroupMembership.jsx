@@ -4,9 +4,25 @@ import React, { Component } from 'react';
 import {
   Form, Button, Col, Card, CardDeck, Container,
 } from 'react-bootstrap';
+import { Redirect } from 'react-router';
+import { Link } from 'react-router-dom';
 import apiHost from '../config';
 
 class GroupMembership extends Component {
+  // constructor(props) {
+  //   super(props);
+  //   this.state = { group_name: this.props.groupMembership.group_name };
+  // }
+
+  // onVisit = () => (
+  //   <Redirect
+  //     to={{
+  //       pathname: '/',
+  //       state: { group_name: this.state.group_name },
+  //     }}
+  //   />
+  // )
+
   render() {
     let groupElements = [];
     const groupMember = this.props.groupMembership;
@@ -19,7 +35,12 @@ class GroupMembership extends Component {
           <Card.Img variant="top" style={{ width: '100%', height: '60%' }} src={group_image} />
           <Card.Body>
             <Card.Title>{groupMember.group_name}</Card.Title>
-            <Button variant="primary">Visit Group</Button>
+            <Link to={{ pathname: '/groupdetails', state: { group_name: groupMember.group_name } }}>
+              <Button variant="link">Visit Group</Button>
+            </Link>
+            {'\u00A0'}
+            {'\u00A0'}
+            <Button variant="danger">Leave Group</Button>
           </Card.Body>
         </Card>
       );
