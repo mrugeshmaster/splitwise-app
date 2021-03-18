@@ -13,7 +13,7 @@ import apiHost from '../config';
 import GroupDetailsCell from './GroupDetailsCell';
 import LeftSidebar from './LeftSidebar';
 import ExpenseModal from './ExpenseModal';
-import SettleUpModal from './SettleUpModal';
+// import SettleUpModal from './SettleUpModal';
 
 class GroupDetails extends Component {
   constructor(props) {
@@ -22,16 +22,17 @@ class GroupDetails extends Component {
       group_name: this.props.location.state.group_name,
       groupDetails: [],
       showExpenseModal: false,
-      showSettleUpModal: false,
+      // showSettleUpModal: false,
     };
+    this.getGroupDetails();
   }
 
   componentDidMount() {
     this.getGroupDetails();
   }
 
-  getGroupDetails = () => {
-    axios.get(`${apiHost}/api/groupdetails/user_id/${localStorage.getItem('user_id')}/group_name/${this.props.location.state.group_name}`)
+  getGroupDetails = async () => {
+    await axios.get(`${apiHost}/api/groupdetails/user_id/${localStorage.getItem('user_id')}/group_name/${this.props.location.state.group_name}`)
       .then((response) => {
         if (response.data[0]) {
           this.setState({
@@ -53,23 +54,13 @@ class GroupDetails extends Component {
     this.setState({
       showExpenseModal: false,
     });
-  }
-
-  showSettleUpModal = () => {
-    this.setState({
-      showSettleUpModal: true,
-    });
-  }
-
-  hideSettleUpModal = () => {
-    this.setState({
-      showSettleUpModal: false,
-    });
+    this.getGroupDetails();
   }
 
   render() {
     console.log('In render');
-    console.log(this.state.groupDetails[0]);
+    console.log(`Group Details 0 :${JSON.stringify(this.state.groupDetails[0])}`);
+    console.log(this.state.message);
     const groupElements = [];
 
     if (this.state && this.state.groupDetails && this.state.groupDetails.length > 0) {
@@ -93,14 +84,15 @@ class GroupDetails extends Component {
                   {this.state.group_name}
                 </h2>
                 <Col style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <ExpenseModal show={this.state.showExpenseModal} handleClose={this.hideExpenseModal} />
-                  <Button variant="info" onClick={this.showExpenseModal}>Add an Expense</Button>
-                  &nbsp;&nbsp;&nbsp;
-                  <SettleUpModal show={this.state.showSettleUpModal} handleClose={this.showSettleUpModal} />
-                  <Button variant="success" onClick={this.showSettleUpModal}>Settle up</Button>
-                  &nbsp;
+                  <ExpenseModal
+                    show={this.state.showExpenseModal}
+                    handleClose={this.hideExpenseModal}
+                    group_name={this.state.group_name}
+                  />
+                  <Button variant="success" onClick={this.showExpenseModal}>Add an Expense</Button>
                 </Col>
               </Row>
+              &nbsp;
               <Row>
                 <ListGroup variant="flush" style={{ width: '100%' }}>
                   {groupElements}

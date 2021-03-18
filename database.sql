@@ -71,52 +71,59 @@ CREATE TABLE `bill_transaction` (
 DROP PROCEDURE IF EXISTS `add_bill`;
 DELIMITER //
 CREATE PROCEDURE `add_bill` (
-    in_group_id INT,
+    in_group_name VARCHAR(255),
     in_bill_name VARCHAR(255),
     in_bill_paid_by INT,
     in_bill_amount DOUBLE
 )
 BEGIN
     DECLARE _bill_id INT;
+    DECLARE _group_id INT;
 
-    INSERT INTO bills (group_id, bill_name, bill_paid_by, bill_amount, bill_created_at, settle) 
-    VALUES (in_group_id,in_bill_name,in_bill_paid_by,in_bill_amount,NOW(),'F');
+    IF EXISTS(SELECT group_id FROM groups WHERE group_name=in_group_name) THEN
+        SELECT group_id INTO _group_id FROM groups WHERE group_name=in_group_name;
 
-    SELECT max(bill_id) INTO _bill_id FROM bills WHERE bill_name = in_bill_name;
+        INSERT INTO bills (group_id, bill_name, bill_paid_by, bill_amount, bill_created_at, settle) 
+        VALUES (_group_id,in_bill_name,in_bill_paid_by,in_bill_amount,NOW(),'F');
 
-    INSERT INTO bill_transaction ( bill_id, user_id, owed_id, amount)
-    SELECT b.bill_id,
-            b.bill_paid_by AS user_id,
-            b1.owed_id AS owed_id,
-            (b.bill_amount / b2.no_of_users) AS amount
-    FROM bills b 
-    JOIN (
-        SELECT count(gu.user_id) AS no_of_users, 
-                b.group_id, 
-                b.bill_id
+        SELECT max(bill_id) INTO _bill_id FROM bills WHERE bill_name = in_bill_name;
+
+        INSERT INTO bill_transaction ( bill_id, user_id, owed_id, amount)
+        SELECT b.bill_id,
+                b.bill_paid_by AS user_id,
+                b1.owed_id AS owed_id,
+                (b.bill_amount / b2.no_of_users) AS amount
         FROM bills b 
-        JOIN groups_users gu
-        ON b.group_id = gu.group_id 
-        AND gu.is_member = 'Y'
-        GROUP BY b.group_id, b.bill_id
-    ) b2 
-    ON b.group_id = b2.group_id 
-    AND b.bill_id = b2.bill_id
-    JOIN
-    (
-        SELECT user_id AS owed_id, 
-                bills.bill_id
-        FROM bills 
-        JOIN groups_users 
-        ON bills.group_id = groups_users.group_id 
-        AND bills.bill_paid_by <> groups_users.user_id
-        AND groups_users.is_member = 'Y'
-    ) b1 
-    ON b.bill_id = b1.bill_id
-    WHERE b.bill_id = _bill_id;
+        JOIN (
+            SELECT count(gu.user_id) AS no_of_users, 
+                    b.group_id, 
+                    b.bill_id
+            FROM bills b 
+            JOIN groups_users gu
+            ON b.group_id = gu.group_id 
+            AND gu.is_member = 'Y'
+            GROUP BY b.group_id, b.bill_id
+        ) b2 
+        ON b.group_id = b2.group_id 
+        AND b.bill_id = b2.bill_id
+        JOIN
+        (
+            SELECT user_id AS owed_id, 
+                    bills.bill_id
+            FROM bills 
+            JOIN groups_users 
+            ON bills.group_id = groups_users.group_id 
+            AND bills.bill_paid_by <> groups_users.user_id
+            AND groups_users.is_member = 'Y'
+        ) b1 
+        ON b.bill_id = b1.bill_id
+        WHERE b.bill_id = _bill_id;
 
-    SELECT "BILL_ADDED" AS flag;
-
+        SELECT "BILL_ADDED" AS flag;
+    
+    ELSE
+        SELECT 'GROUP_DOES_NOT_EXISTS' AS flag;
+    END IF;
 END //
 DELIMITER ;
 

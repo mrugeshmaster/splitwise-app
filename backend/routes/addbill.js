@@ -4,9 +4,9 @@ const router = express.Router();
 const pool = require('../pool.js');
 
 router.post('/', (req, res) => {
-  // console.log('Inside Signup Post Request');
-  // console.log('Req Body : ', req.body);
-  const sql = `CALL add_bill('${req.body.group_id}', '${req.body.bill_name}', '${req.body.bill_paid_by}', '${req.body.bill_amount}');`;
+  console.log('Inside Add Bill Post Request');
+  console.log('Req Body : ', req.body);
+  const sql = `CALL add_bill('${req.body.group_name}', '${req.body.bill_name}', '${req.body.bill_paid_by}', '${req.body.bill_amount}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];
