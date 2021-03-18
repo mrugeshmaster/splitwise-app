@@ -4,27 +4,20 @@ import {
 } from 'react-bootstrap';
 
 class ExpenseModal extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      show: false,
-    };
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     show: false,
+  //   };
+  // }
 
   handleSave = () => {
 
   }
 
-  // handleClose = () => {
-  //   this.setState({
-  //     show: false,
-  //   });
-  // }
-
   render() {
     return (
-      // <Modal show={this.state.show} onHide={this.handleClose}>
-      <div>
+      <Modal show={this.props.show} onHide={this.props.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>
             <Row>
@@ -33,7 +26,7 @@ class ExpenseModal extends Component {
             <Row>
               With you and:
               &nbsp;
-              {this.props.state.group_name}
+              {/* {this.props.state.group_name} */}
             </Row>
           </Modal.Title>
         </Modal.Header>
@@ -52,15 +45,14 @@ class ExpenseModal extends Component {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleSave}>
+          <Button variant="secondary" onClick={this.props.handleClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={this.handleClose}>
+          <Button variant="primary" onClick={this.handleSave}>
             Save
           </Button>
         </Modal.Footer>
-      </div>
-      // </Modal>
+      </Modal>
     );
   }
 }

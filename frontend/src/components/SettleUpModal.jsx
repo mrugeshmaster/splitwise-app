@@ -4,26 +4,20 @@ import {
 } from 'react-bootstrap';
 
 class SettleUpModal extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      show: false,
-    };
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     show: false,
+  //   };
+  // }
 
   handleSave = () => {
 
   }
 
-  handleClose = () => {
-    this.setState({
-      show: false,
-    });
-  }
-
   render() {
     return (
-      <Modal show={this.state.show} onHide={this.handleClose}>
+      <Modal show={this.props.show} onHide={this.props.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>
             <Row>
@@ -32,7 +26,7 @@ class SettleUpModal extends Component {
             <Row>
               With you and:
               &nbsp;
-              {this.props.state.group_name}
+              {/* {this.props.state.group_name} */}
             </Row>
           </Modal.Title>
         </Modal.Header>

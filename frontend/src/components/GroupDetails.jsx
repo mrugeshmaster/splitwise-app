@@ -93,9 +93,10 @@ class GroupDetails extends Component {
                   {this.state.group_name}
                 </h2>
                 <Col style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <ExpenseModal show={this.state.showExpenseModal} handleClose={this.}
+                  <ExpenseModal show={this.state.showExpenseModal} handleClose={this.hideExpenseModal} />
                   <Button variant="info" onClick={this.showExpenseModal}>Add an Expense</Button>
                   &nbsp;&nbsp;&nbsp;
+                  <SettleUpModal show={this.state.showSettleUpModal} handleClose={this.showSettleUpModal} />
                   <Button variant="success" onClick={this.showSettleUpModal}>Settle up</Button>
                   &nbsp;
                 </Col>
