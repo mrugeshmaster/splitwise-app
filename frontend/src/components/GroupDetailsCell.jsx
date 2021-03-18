@@ -1,21 +1,24 @@
 import React, { Component } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import Moment from 'react-moment';
+import '../App.css';
 
-class GroupDetailsEntry extends Component {
+class GroupDetailsCell extends Component {
   render() {
     const { groupDetail } = this.props;
     return (
       <Row>
-        <Col md={2}><Moment format="MMM YYYY">{groupDetail.bill_created_at}</Moment></Col>
+        <Col md={2}><Moment tz={localStorage.getItem('timezone')} className="billdate" format="MMM DD">{groupDetail.bill_created_at}</Moment></Col>
         <Col md={6}>{groupDetail.bill_name}</Col>
         <Col md={2}>
           <Row>
             <Col>
               <Row style={{ fontSize: '12px', color: 'grey' }}>
-                {groupDetail.paid_by_name}
-                {' '}
-                paid
+                { groupDetail.bill_paid_by === groupDetail.user_id ? (
+                  'you paid'
+                ) : (
+                  `${groupDetail.paid_by_name} paid`
+                ) }
               </Row>
               <Row>{groupDetail.bill_amount}</Row>
             </Col>
@@ -26,18 +29,12 @@ class GroupDetailsEntry extends Component {
             <Col>
               <Row style={{ fontSize: '12px', color: 'grey' }}>
                 { groupDetail.bill_paid_by === groupDetail.user_id ? (
-                  <p>
-                    you lent
-                  </p>
+                  'you lent'
                 ) : (
-                  <p>
-                    {groupDetail.paid_by_name}
-                    {' '}
-                    lent you
-                  </p>
+                  `${groupDetail.paid_by_name} lent you`
                 ) }
               </Row>
-              <Row>{groupDetail.split_amount}</Row>
+              <Row className={groupDetail.bill_paid_by === groupDetail.user_id ? 'paid' : 'owe'}>{groupDetail.split_amount}</Row>
             </Col>
           </Row>
         </Col>
@@ -45,4 +42,4 @@ class GroupDetailsEntry extends Component {
     );
   }
 }
-export default GroupDetailsEntry;
+export default GroupDetailsCell;

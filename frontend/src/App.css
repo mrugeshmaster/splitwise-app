@@ -37,3 +37,15 @@
     transform: translateY(0px)
   }
 }
+
+.billdate {
+  color: gray;
+}
+
+.owe {
+  color: salmon;
+}
+
+.paid {
+  color: darkcyan;
+}

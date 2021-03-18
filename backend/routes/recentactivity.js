@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../pool.js');
 
-router.get('/', (req, res) => {
-  const sql = `CALL Get_Recent_Activity('${req.body.user_id}');`;
+router.get('/:user_id', (req, res) => {
+  const sql = `CALL Get_Recent_Activity('${req.params.user_id}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];

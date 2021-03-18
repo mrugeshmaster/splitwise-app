@@ -297,7 +297,7 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS `Get_Recent_Activity`
+DROP PROCEDURE IF EXISTS `Get_Recent_Activity`;
 DELIMITER //
 CREATE PROCEDURE `Get_Recent_Activity` (
     in_user_id INT
@@ -417,7 +417,6 @@ SELECT b.bill_id,
         b.bill_name, 
         b.bill_amount, 
         g.group_name, 
-        -- u.user_id,
         b.bill_paid_by, 
         gu.user_id,
         u.name,

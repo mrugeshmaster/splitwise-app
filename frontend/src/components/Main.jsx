@@ -8,6 +8,7 @@ import LandingPage from './LandingPage';
 import NewGroup from './NewGroup';
 import Groups from './Groups';
 import GroupDetails from './GroupDetails';
+import RecentActivity from './RecentActivity';
 
 class Main extends Component {
   render() {
@@ -21,6 +22,7 @@ class Main extends Component {
         <Route path="/newgroup" component={NewGroup} />
         <Route path="/groups" component={Groups} />
         <Route path="/groupdetails" component={GroupDetails} />
+        <Route path="/recentactivity" component={RecentActivity} />
       </div>
     );
   }

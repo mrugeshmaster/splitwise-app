@@ -27,18 +27,18 @@ class LeftSidebar extends Component {
   }
 
   render() {
-    console.log(this.state.group_name);
-    console.log(this.state.groupList);
+    // console.log(this.state.group_name);
+    // console.log(this.state.groupList);
     const groupLinks = [];
     if (this.state && this.state.groupList && this.state.groupList.length > 0) {
       this.state.groupList.map((group) => {
-        console.log(`State name: ${this.state.group_name}`);
-        console.log(`Group Name: ${group.group_name}`);
-        console.log(this.state.group_name === group.group_name);
+        // console.log(`State name: ${this.state.group_name}`);
+        // console.log(`Group Name: ${group.group_name}`);
+        // console.log(this.state.group_name === group.group_name);
         groupLinks.push(
           <Link
             class="nav-link"
-            onClick={() => { this.setState({ group_name: group.group_name }); }}
+            // onClick={() => { this.setState({ group_name: group.group_name }); }}
             to={{
               pathname: '/groupdetails',
               state: { group_name: group.group_name },
@@ -52,7 +52,7 @@ class LeftSidebar extends Component {
     return (
       <Nav defaultActiveKey="/home" className="flex-column mt-3">
         <Nav.Link href="/home">Dashboard</Nav.Link>
-        <Nav.Link eventKey="/recentactivity">Recent Activity</Nav.Link>
+        <Nav.Link href="/recentactivity">Recent Activity</Nav.Link>
         <hr />
         <div className="px-3 text-muted">Groups</div>
         {groupLinks}
