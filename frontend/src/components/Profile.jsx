@@ -14,7 +14,7 @@ class Profile extends Component {
     this.getUser();
   }
 
-  getUser = () => {
+  getUser = async () => {
     axios.get(`${apiHost}/api/profile/${localStorage.getItem('user_id')}`)
       .then((response) => {
         if (response) {
@@ -58,25 +58,24 @@ class Profile extends Component {
   onUpload = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('file', this.state.file);
-    console.log(JSON.stringify(formData));
+    formData.append('image', this.state.file);
     const uploadConfig = {
       headers: {
         'content-type': 'multipart/form-data',
       },
     };
-    console.log(JSON.stringify(this.state));
     axios.post(`${apiHost}/api/upload/${localStorage.getItem('user_id')}`, formData, uploadConfig)
       .then((response) => {
-        // alert('Image uploaded successfully!');
-        // this.setState({
-        //   filename: 'Choose your Avatar',
-        //   image: response.data,
-        // });
-        console.log(JSON.stringify(response));
+        alert('Image uploaded successfully!');
+        this.setState({
+          filename: 'Choose your avatar',
+          image: response.data.message,
+        });
+        console.log(this.state.image);
+        // this.getUser();
       })
       .catch((err) => {
-        console.log(err);
+        console.log(err.response);
       });
   }
 
@@ -89,7 +88,6 @@ class Profile extends Component {
         this.setState({
           message: response.data.message,
         });
-        // console.log(response.data.message);
       })
       .catch((err) => {
         if (err.response && err.response.data) {
@@ -102,7 +100,6 @@ class Profile extends Component {
 
   render() {
     let redirectVar = null;
-    // let message = '';
     if (this.state.message === 'USER_UPDATED') {
       localStorage.setItem('name', this.state.name);
       redirectVar = <Redirect to="/home" />;
@@ -110,7 +107,7 @@ class Profile extends Component {
     let image = null;
     const filename = this.state.filename || 'Choose your Avatar';
     if (this.state) {
-      image = `${apiHost}/api/upload/${localStorage.getItem('user_id')}`;
+      image = `${apiHost}/api/upload/${this.state.image}`;
     }
     return (
       <div>

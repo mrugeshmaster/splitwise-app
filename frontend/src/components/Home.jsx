@@ -135,16 +135,16 @@ class Home extends Component {
             </Row>
             <Row>
               <Col>
-                You Owe
+                <h4 className="text-muted">You Owe</h4>
                 <ListGroup variant="flush">
-                  {payItems}
+                  {payItems.length > 0 ? payItems : <div className="mt-2 text-muted d-flex">You are settled</div> }
                 </ListGroup>
               </Col>
               <Divider orientation="vertical" flexItem />
               <Col>
-                <Row style={{ display: 'flex', justifyContent: 'flex-end' }}>You are Owed</Row>
+                <Row className="mr-1" style={{ display: 'flex', justifyContent: 'flex-end' }}><h4 className="text-muted">You are Owed</h4></Row>
                 <ListGroup variant="flush">
-                  {collectItems}
+                  {collectItems.length > 0 ? collectItems : <div className="mt-2 pr-0 text-muted d-flex justify-content-end">You are settled</div> }
                 </ListGroup>
               </Col>
             </Row>

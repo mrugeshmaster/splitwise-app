@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
 import apiHost from '../config';
-import SplitwiseImage from '../images/logo.svg';
+// import SplitwiseImage from '../images/logo.svg';
 import InvitationForm from './InvitationForm';
 
 class NewGroup extends Component {
@@ -26,8 +26,6 @@ class NewGroup extends Component {
 
   onCreate = (e) => {
     e.preventDefault();
-    // const user_id = localStorage.getItem('user_id');
-    // const group_name = { ...this.state };
     const data = {
       user_id: localStorage.getItem('user_id'),
       groupName: this.state.groupName,
@@ -41,6 +39,37 @@ class NewGroup extends Component {
         this.setState({
           message: err.response.data.message,
         });
+      });
+  }
+
+  onGroupImageChange = (e) => {
+    this.setState({
+      file: e.target.files[0],
+      filename: e.target.files[0].name,
+    });
+  }
+
+  onUpload = (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('image', this.state.file);
+    const uploadConfig = {
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+    };
+    axios.post(`${apiHost}/api/upload/group/${this.state.groupName}`, formData, uploadConfig)
+      .then((response) => {
+        alert('Image uploaded successfully!');
+        this.setState({
+          filename: 'Choose your avatar',
+          image: response.data.message,
+        });
+        console.log(this.state.image);
+        // this.getUser();
+      })
+      .catch((err) => {
+        console.log(err.response);
       });
   }
 
@@ -76,13 +105,35 @@ class NewGroup extends Component {
       invitationForms.push(<InvitationForm groupName={this.state.groupName} onCancel={this.onCancel} />);
     }
 
+    let image = null;
+    const filename = this.state.filename || 'Choose Group Image';
+    if (this.state) {
+      image = `${apiHost}/api/upload/group/${this.state.image}`;
+    }
+
     return (
       <div>
         <NavBar />
         <div className="mt-5">
           <Row>
             <Col md={{ span: 3, offset: 2 }}>
-              <Image src={SplitwiseImage} className="img-fluid rounded float-right" style={{ height: 200, width: 200 }} alt="Splitwise" />
+              <Image style={{ width: '17rem' }} src={image} />
+              <Form onSubmit={this.onUpload}>
+                <Form.Group as={Col} className="lg-3">
+                  <Form.File
+                    className="mt-3"
+                    name="image"
+                    id="image"
+                    style={{ width: '17rem' }}
+                    accept="image/*"
+                    label={filename}
+                    onChange={this.onGroupImageChange}
+                    custom
+                  />
+                  <br />
+                  <Button type="submit">Upload</Button>
+                </Form.Group>
+              </Form>
             </Col>
             <Col md={{ span: 3 }}>
               <h5>START A NEW GROUP</h5>

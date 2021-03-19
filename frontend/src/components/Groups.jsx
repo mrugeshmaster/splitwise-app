@@ -7,7 +7,7 @@ import {
   Alert, Row, Col, Container,
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'react-bootstrap-icons';
+import { ArrowRightSquareFill } from 'react-bootstrap-icons';
 import NavBar from './NavBar';
 import apiHost from '../config';
 import GroupInvitation from './GroupInvitation';
@@ -80,18 +80,22 @@ class Groups extends Component {
             <Col md={{ offset: 1, span: 2 }} className="flex-column"><LeftSidebar /></Col>
             <Col>
               <Row>
-                <Col md={{ span: 6 }}>
+                <Col md={6} className="pr-2">
                   <SearchBar
                     names={this.state.groupMemberships.map((groupMembership) => groupMembership.group_name)}
                     onSearchName={this.onSearchName}
                     onUpdateInvitation={this.onUpdateInvitation}
                   />
-                  <Link to={{
-                    pathname: '/groupdetails',
-                    state: { group_name: this.state.groupSearchName },
-                  }}
+                </Col>
+                <Col md={1} className="p-0">
+                  <Link
+                    variant="btn-info"
+                    to={{
+                      pathname: '/groupdetails',
+                      state: { group_name: this.state.groupSearchName },
+                    }}
                   >
-                    <ArrowRight />
+                    <ArrowRightSquareFill size="38px" />
                   </Link>
                 </Col>
               </Row>

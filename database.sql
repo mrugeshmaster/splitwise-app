@@ -151,7 +151,7 @@ CREATE PROCEDURE `SIGNUP_Post` (
 )
 BEGIN
     IF NOT EXISTS(SELECT email FROM users WHERE email = in_email) THEN
-        INSERT INTO users (name, email, password, currency, language, timezone, image) VALUES (in_name, in_email, in_password, 'USD', 'English', '-08:00','userPlaceholder.png');
+        INSERT INTO users (name, email, password, currency, language, timezone, image) VALUES (in_name, in_email, in_password, 'USD', 'English', 'America/Los_Angeles','userPlaceholder.png');
         SELECT 'NEW_USER_CREATED' AS flag;
     ELSE
         SELECT 'USER_ALREADY_EXISTS' AS flag;

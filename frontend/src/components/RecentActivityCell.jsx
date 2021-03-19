@@ -8,7 +8,7 @@ import '../App.css';
 class RecentActivityCell extends Component {
   render() {
     const { activity } = this.props;
-    console.log(activity.bill_created_at);
+    // console.log(activity.bill_created_at);
     return (
       <Row>
         <Col>

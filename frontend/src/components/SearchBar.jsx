@@ -22,10 +22,6 @@ class SearchBar extends Component {
     }
   }
 
-  onClearValue = () => {
-    this.props.onUpdateInvitation();
-  }
-
   render() {
     console.log(`Props: ${this.props.names}`);
     const searchList = this.props.names.map((name) => ({
@@ -43,7 +39,6 @@ class SearchBar extends Component {
           classNamePrefix="select"
           isClearable
           isSearchable
-          clearValue={this.onClearValue}
         />
       </div>
     );

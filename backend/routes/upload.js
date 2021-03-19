@@ -17,25 +17,24 @@ const imageStorage = multer.diskStorage({
 const upload = multer({
   storage: imageStorage,
   limits: { filesize: 1000000 },
-}).single('avatar');
+}).single('image');
 
 router.post('/:user_id', (req, res) => {
   upload(req, res, (err) => {
     if (!err) {
       console.log('Inside upload POST request');
       const sql = `UPDATE users SET image='${req.file.filename}' WHERE user_id=${req.params.user_id}`;
-      pool.query(sql, (sqlerr, result) => {
-        if (sqlerr) {
-          res.writeHead(500, {
-            'Content-Type': 'application/json',
-          });
-          res.end(JSON.stringify({ message: sqlerr }));
-        }
+      pool.query(sql).then((rows) => {
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+        });
+        res.end(JSON.stringify({ message: req.file.filename }));
+      }).catch((sqlerr) => {
+        res.writeHead(500, {
+          'Content-Type': 'application/json',
+        });
+        res.end(JSON.stringify({ message: sqlerr }));
       });
-      res.writeHead(200, {
-        'Content-Type': 'application/json',
-      });
-      res.end(JSON.stringify({ message: req.file.filename }));
     } else {
       // console.log('Error!');
       res.writeHead(500, {
@@ -46,37 +45,47 @@ router.post('/:user_id', (req, res) => {
   });
 });
 
-router.get('/:userId', (req, res) => {
-  // console.log('Inside image GET request');
-  // console.log('Req Body : ', req.body);
-  const sql = `SELECT image FROM users WHERE user_id=${req.params.userId};`;
-  // console.log('SQL File : ', sql);
-  pool.query(sql)
-    .then((rows) => {
-      const result = rows[0];
-      if (result && result.length > 0) {
-        const imageName = result[0].image;
-        const image = `${path.join(__dirname, '..')}/public/storage/users/${imageName}`;
-        // console.log(image);
-        if (fs.existsSync(image)) {
-          res.sendFile(image);
-        }
-      } else {
-        res.sendFile(`${path.join(__dirname, '..')}/public/storage/users/userPlaceholder.png`);
-      }
-    }).catch((err) => {
+router.post('/group/:group_name', (req, res) => {
+  upload(req, res, (err) => {
+    if (!err) {
+      console.log('Inside upload POST request');
+      const sql = `UPDATE groups SET group_image='${req.file.filename}' WHERE user_id=${req.params.group_name}`;
+      pool.query(sql).then((rows) => {
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+        });
+        res.end(JSON.stringify({ message: req.file.filename }));
+      }).catch((sqlerr) => {
+        res.writeHead(500, {
+          'Content-Type': 'application/json',
+        });
+        res.end(JSON.stringify({ message: sqlerr }));
+      });
+    } else {
+      // console.log('Error!');
       res.writeHead(500, {
         'Content-Type': 'application/json',
       });
       res.end(JSON.stringify({ message: err }));
-    });
+    }
+  });
+});
+
+router.get('/:userImage', (req, res) => {
+  console.log('Inside user image GET request');
+  // console.log('Req Body : ', req.body);
+  const image = `${path.join(__dirname, '..')}/public/storage/users/${req.params.userImage}`;
+
+  if (fs.existsSync(image)) {
+    res.sendFile(image);
+  } else {
+    res.sendFile(`${path.join(__dirname, '..')}/public/storage/users/userPlaceholder.png`);
+  }
 });
 
 router.get('/group/:group_image', (req, res) => {
-  console.log('Inside image GET request');
+  console.log('Inside group image GET request');
   console.log('Req Body : ', req.body);
-  // const sql = `SELECT image FROM users WHERE user_id=${req.params.userId};`;
-  // console.log('SQL File : ', sql);
   const image = `${path.join(__dirname, '..')}/public/storage/groups/${req.params.group_image}`;
   if (fs.existsSync(image)) {
     res.sendFile(image);
