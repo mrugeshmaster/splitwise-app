@@ -1,5 +1,4 @@
 /* eslint-disable array-callback-return */
-/* eslint-disable max-len */
 import axios from 'axios';
 import React, { Component } from 'react';
 import { Nav } from 'react-bootstrap';
@@ -27,18 +26,13 @@ class LeftSidebar extends Component {
   }
 
   render() {
-    // console.log(this.state.group_name);
-    // console.log(this.state.groupList);
     const groupLinks = [];
     if (this.state && this.state.groupList && this.state.groupList.length > 0) {
       this.state.groupList.map((group) => {
-        // console.log(`State name: ${this.state.group_name}`);
-        // console.log(`Group Name: ${group.group_name}`);
-        // console.log(this.state.group_name === group.group_name);
         groupLinks.push(
           <Link
-            class="nav-link"
-            // onClick={() => { this.setState({ group_name: group.group_name }); }}
+            key={group.group_name}
+            className="nav-link"
             to={{
               pathname: '/groupdetails',
               state: { group_name: group.group_name },
@@ -56,9 +50,6 @@ class LeftSidebar extends Component {
         <hr />
         <div className="px-3 text-muted">Groups</div>
         {groupLinks}
-        {/* {this.state && this.state.groupList && this.state.groupList.length > 0 && this.state.groupList.map((group) => {
-          <Nav.Link href="/groupdetails">{group.group_name}</Nav.Link>;
-        })} */}
       </Nav>
     );
   }

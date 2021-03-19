@@ -21,16 +21,35 @@ class GroupInvitation extends Component {
       user_id: localStorage.getItem('user_id'),
       group_name: this.state.group_name,
     };
-    axios.post(`${apiHost}/api/acceptInvite`, data)
+    axios.post(`${apiHost}/api/acceptInvite/accept`, data)
       .then((response) => {
         if (response.data.message) {
           this.setState({
             message: response.data.message,
           });
-          this.props.onUpdateInvitation(this.props.groupInvite);
+          this.props.onUpdateInvitation();
         }
       }).catch((err) => {
         console.log(err);
+      });
+  }
+
+  onRejectInvite = () => {
+    const data = {
+      user_id: localStorage.getItem('user_id'),
+      group_name: this.state.group_name,
+    };
+    axios.post(`${apiHost}/api/acceptInvite/reject`, data)
+      .then((response) => {
+        if (response.data.message) {
+          this.setState({
+            message: response.data.message,
+          });
+          console.log(this.state.message);
+          this.props.onUpdateInvitation();
+        }
+      }).catch((err) => {
+        console.log(err.response.data);
       });
   }
 
@@ -44,10 +63,10 @@ class GroupInvitation extends Component {
           <Card.Img variant="top" src={group_image} />
           <Card.Body>
             <Card.Title>{groupInvitation.group_name}</Card.Title>
-            <Button variant="primary" onClick={this.onAcceptInvite}>Accept Invite</Button>
+            <Button variant="info" onClick={this.onAcceptInvite}>Accept Invite</Button>
             {'\u00A0'}
             {'\u00A0'}
-            <Button variant="danger" onClick={this.onAcceptInvite}>Reject Invite</Button>
+            <Button variant="danger" onClick={this.onRejectInvite}>Reject Invite</Button>
           </Card.Body>
         </Card>
       );

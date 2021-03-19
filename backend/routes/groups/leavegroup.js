@@ -3,10 +3,10 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../pool.js');
 
-router.get('/', (req, res) => {
+router.post('/', (req, res) => {
   // console.log('Inside Login Post Request');
   // console.log('Req Body : ', req.body);
-  const sql = `CALL Group_Member_Invite_Display('${req.body.user_id}');`;
+  const sql = `CALL Group_Member_Leave('${req.body.user_id}', '${req.body.group_name}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];
@@ -16,12 +16,12 @@ router.get('/', (req, res) => {
       res.writeHead(200, {
         'Content-Type': 'application/json',
       });
-      res.end(JSON.stringify(result[0]));
+      res.end(JSON.stringify({ message: result[0][0].flag }));
     } else {
       res.writeHead(401, {
         'Content-Type': 'application/json',
       });
-      res.end(JSON.stringify({ message: 'NO_INVITATIONS' }));
+      res.end(JSON.stringify({ message: 'SOMETHING_WENT_WRONG' }));
     }
   }).catch((err) => {
     res.writeHead(500, {

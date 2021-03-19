@@ -28,9 +28,6 @@ class ExpenseModal extends Component {
     axios.post(`${apiHost}/api/addbill`, data)
       .then((response) => {
         if (response.data.message === 'BILL_ADDED') {
-          // this.setState({
-          //   message: response.data.message,
-          // });
           this.props.handleClose();
         }
       }).catch((err) => {

@@ -26,19 +26,20 @@ class Groups extends Component {
     this.getGroups();
   }
 
-  onUpdateInvitation = (incomingGroupInvite) => {
-    let newGroupInvites = this.state.groupInvites;
-    newGroupInvites = newGroupInvites.filter((gI) => gI.group_name !== incomingGroupInvite.group_name);
-    incomingGroupInvite.is_member = 'Y';
-    const newGroupMembers = [...this.state.groupMemberships, incomingGroupInvite];
+  onUpdateInvitation = () => {
+    // let newGroupInvites = this.state.groupInvites;
+    // newGroupInvites = newGroupInvites.filter((gI) => gI.group_name !== incomingGroupInvite.group_name);
+    // incomingGroupInvite.is_member = 'Y';
+    // const newGroupMembers = [...this.state.groupMemberships, incomingGroupInvite];
     this.setState({
-      groupInvites: newGroupInvites,
-      groupMemberships: newGroupMembers,
+      groupInvites: [],
+      groupMemberships: [],
     });
+    this.getGroups();
   }
 
-  getGroups = () => {
-    axios.get(`${apiHost}/api/getGroups/${localStorage.getItem('user_id')}`)
+  getGroups = async () => {
+    await axios.get(`${apiHost}/api/getGroups/${localStorage.getItem('user_id')}`)
       .then((response) => {
         response.data.map((res) => {
           if (res.is_member === 'Y') {
@@ -105,6 +106,7 @@ class Groups extends Component {
                       <GroupMembership
                         key={groupMembership}
                         groupMembership={groupMembership}
+                        onUpdateInvitation={this.onUpdateInvitation}
                       />
                     ))}
                   </Container>

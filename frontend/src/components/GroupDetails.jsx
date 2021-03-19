@@ -1,8 +1,4 @@
-/* eslint-disable max-len */
-/* eslint-disable react/no-access-state-in-setstate */
-/* eslint-disable no-unused-expressions */
 /* eslint-disable array-callback-return */
-/* eslint-disable camelcase */
 import React, { Component } from 'react';
 import axios from 'axios';
 import {
@@ -13,7 +9,7 @@ import apiHost from '../config';
 import GroupDetailsCell from './GroupDetailsCell';
 import LeftSidebar from './LeftSidebar';
 import ExpenseModal from './ExpenseModal';
-// import SettleUpModal from './SettleUpModal';
+import RightSidebar from './RightSidebar';
 
 class GroupDetails extends Component {
   constructor(props) {
@@ -27,9 +23,9 @@ class GroupDetails extends Component {
     this.getGroupDetails();
   }
 
-  componentDidMount() {
-    this.getGroupDetails();
-  }
+  // componentDidMount() {
+  //   this.getGroupDetails();
+  // }
 
   getGroupDetails = async () => {
     await axios.get(`${apiHost}/api/groupdetails/user_id/${localStorage.getItem('user_id')}/group_name/${this.props.location.state.group_name}`)
@@ -60,7 +56,6 @@ class GroupDetails extends Component {
   render() {
     console.log('In render');
     console.log(`Group Details 0 :${JSON.stringify(this.state.groupDetails[0])}`);
-    console.log(this.state.message);
     const groupElements = [];
 
     if (this.state && this.state.groupDetails && this.state.groupDetails.length > 0) {
@@ -99,7 +94,12 @@ class GroupDetails extends Component {
                 </ListGroup>
               </Row>
             </Col>
-            <Col md={{ span: 2 }}>&nbsp;</Col>
+            <Col md={{ span: 2 }}>
+              <RightSidebar
+                key={this.state.group_name}
+                groupName={this.state.group_name}
+              />
+            </Col>
           </Row>
         </div>
       </div>

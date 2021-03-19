@@ -6,7 +6,7 @@ const pool = require('../pool.js');
 router.post('/', (req, res) => {
   // console.log('Inside Signup Post Request');
   // console.log('Req Body : ', req.body);
-  const sql = `INSERT INTO bill_transaction (bill_id, user_id, owed_id, amount) VALUES (-1, ${req.body.user_id}, ${req.body.owed_id}, ${req.body.amount})`;
+  const sql = `CALL settle_up('${req.body.user_id}','${req.body.owed_name}','${req.body.settle_amount}')`;
 
   pool.query(sql).then((rows) => {
     if (rows[0].affectedRows > 0) {

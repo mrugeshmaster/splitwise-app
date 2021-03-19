@@ -88,11 +88,12 @@ BEGIN
 
         SELECT max(bill_id) INTO _bill_id FROM bills WHERE bill_name = in_bill_name;
 
-        INSERT INTO bill_transaction ( bill_id, user_id, owed_id, amount)
+        INSERT INTO bill_transaction ( bill_id, user_id, owed_id, amount, settled)
         SELECT b.bill_id,
                 b.bill_paid_by AS user_id,
                 b1.owed_id AS owed_id,
-                (b.bill_amount / b2.no_of_users) AS amount
+                (b.bill_amount / b2.no_of_users) AS amount,
+                'N' AS settled
         FROM bills b 
         JOIN (
             SELECT count(gu.user_id) AS no_of_users, 
@@ -304,6 +305,97 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS `Group_Member_Invite_Reject`;
+DELIMITER //
+CREATE PROCEDURE `Group_Member_Invite_Reject` (
+    in_user_id INT,
+    in_group_name VARCHAR(255)
+)
+BEGIN
+    
+    UPDATE groups_users SET is_member = 'R' 
+    WHERE user_id = in_user_id 
+    AND group_id = (SELECT group_id 
+                    FROM groups 
+                    WHERE group_name = in_group_name);
+
+    SELECT 'INVITE_REJECTED' AS flag;
+    
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `Group_Member_Leave`;
+DELIMITER //
+CREATE PROCEDURE `Group_Member_Leave` (
+    in_user_id INT,
+    in_group_name VARCHAR(255)
+)
+sp: BEGIN
+    
+    DECLARE count_records INT;
+    DECLARE _settled VARCHAR(3);
+
+    SELECT COUNT(final2.settled) INTO count_records
+    FROM (
+        SELECT DISTINCT final.settled 
+        FROM (
+            SELECT 
+                bt.settled 
+            FROM bill_transaction bt
+            JOIN bills b ON bt.bill_id=b.bill_id
+            JOIN groups g ON b.group_id = g.group_id
+            WHERE g.group_name = in_group_name AND bt.user_id=in_user_id
+            UNION ALL 
+            SELECT 
+                bt.settled 
+            FROM bill_transaction bt
+            JOIN bills b ON bt.bill_id=b.bill_id
+            JOIN groups g ON b.group_id = g.group_id
+            WHERE g.group_name = in_group_name AND bt.owed_id=in_user_id
+        ) AS final
+    ) AS final2;
+
+
+    IF count_records > 1 THEN
+        SELECT 'NOT_SETTLED' AS flag;
+        LEAVE sp;
+    ELSE
+        SELECT final2.settled INTO _settled 
+        FROM (
+            SELECT DISTINCT final.settled 
+            FROM (
+                SELECT 
+                    bt.settled 
+                FROM bill_transaction bt
+                JOIN bills b ON bt.bill_id=b.bill_id
+                JOIN groups g ON b.group_id = g.group_id
+                WHERE g.group_name = in_group_name AND bt.user_id=in_user_id
+                UNION ALL 
+                SELECT 
+                    bt.settled 
+                FROM bill_transaction bt
+                JOIN bills b ON bt.bill_id=b.bill_id
+                JOIN groups g ON b.group_id = g.group_id
+                WHERE g.group_name = in_group_name AND bt.owed_id=in_user_id
+            ) AS final
+        ) AS final2;
+
+        IF _settled <> 'Y' THEN
+            SELECT 'NOT_SETTLED' AS flag;
+            LEAVE sp;
+        ELSE
+            UPDATE groups_users SET is_member = 'L' 
+            WHERE user_id = in_user_id 
+            AND group_id = (SELECT group_id 
+                            FROM groups 
+                            WHERE group_name = in_group_name);
+
+            SELECT 'ALL_BALANCE_SETTLED' AS flag;
+        END IF;
+    END IF;
+END //
+DELIMITER ;
+
 DROP PROCEDURE IF EXISTS `Get_Recent_Activity`;
 DELIMITER //
 CREATE PROCEDURE `Get_Recent_Activity` (
@@ -395,20 +487,170 @@ BEGIN
     ORDER BY b.bill_created_at DESC ;
 END //
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `get_balances`;
+DELIMITER // 
+CREATE PROCEDURE `get_balances` (
+    in_user_id INT,
+    in_owed_id INT
+)
+BEGIN
+    SELECT 
+        final2.logged_in_user,
+        MAX(CASE WHEN final2.logged_in_user=u.user_id THEN u.name END) AS logged_in_user_name,
+        final2.checking_with_user,
+        MAX(CASE WHEN final2.checking_with_user=u.user_id THEN u.name END) AS checking_with_user_name,
+        CASE 
+            WHEN final2.net_amt > 0 THEN 'COLLECT' 
+            WHEN final2.net_amt < 0 THEN 'PAY' 
+            ELSE 'SETTLED'
+            END AS collect_or_pay,
+        final2.net_amt
+    FROM (
+        SELECT 
+            CASE WHEN net_amt > 0 THEN s1_user_id ELSE s2_owed_id END AS logged_in_user,
+            -- u.name AS logged_in_user_name,
+            CASE WHEN net_amt > 0 THEN s1_owed_id ELSE s2_user_id END AS checking_with_user,
+            -- CASE WHEN net_amt > 0 THEN 'COLLECT' ELSE 'PAY' END AS collect_or_pay,
+            net_amt
+        FROM (
+            SELECT 
+                s1.user_id as s1_user_id,
+                s1.owed_id as s1_owed_id,
+                s2.user_id as s2_user_id, 
+                s2.owed_id as s2_owed_id,
+                s1.collect_amount - s2.owed_amount as net_amt
+            FROM (
+                SELECT 
+                IFNULL(sum(amount),0) AS collect_amount, user_id, owed_id
+                FROM bill_transaction
+                WHERE user_id=in_user_id AND owed_id=in_owed_id
+            ) AS s1 
+            JOIN (
+                SELECT IFNULL(sum(amount),0) AS owed_amount, user_id, owed_id
+                FROM bill_transaction
+                WHERE user_id=in_owed_id AND owed_id=in_user_id
+            ) AS s2
+        ) AS final
+    ) AS final2
+    JOIN users u 
+    WHERE final2.logged_in_user IS NOT NULL
+    GROUP BY
+    final2.logged_in_user,
+    final2.checking_with_user,
+    CASE 
+        WHEN final2.net_amt > 0 THEN 'COLLECT' 
+        WHEN final2.net_amt < 0 THEN 'PAY' 
+        ELSE 'SETTLED'
+        END,
+    final2.net_amt;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `settle_up`;
+DELIMITER //
+CREATE PROCEDURE `settle_up` (
+    in_user_id INT,
+    in_owed_name VARCHAR(255),
+    in_settle_amount DOUBLE
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE _bill_id, _user_id, in_owed_id, _owed_id INT;
+
+    DECLARE c1 CURSOR FOR (
+        SELECT final.bill_id, final.user_id, final.owed_id FROM (
+            (SELECT
+                bt.bill_id,
+                bt.user_id,
+                bt.owed_id
+                FROM bill_transaction bt
+                WHERE bt.user_id=in_user_id AND bt.owed_id=in_owed_id)
+            UNION ALL
+            (SELECT
+                bt.bill_id,
+                bt.user_id,
+                bt.owed_id
+            FROM bill_transaction bt
+            WHERE bt.user_id=in_owed_id AND bt.owed_id=in_user_id) 
+        ) AS final
+    );
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    SELECT u.user_id INTO in_owed_id FROM users u WHERE u.name = in_owed_name; 
+    
+    INSERT INTO bill_transaction (bill_id, user_id, owed_id, amount) VALUES (-1, in_user_id, in_owed_id, in_settle_amount);
+
+    OPEN c1;
+
+    read_loop: LOOP
+        FETCH c1 INTO _bill_id, _user_id, _owed_id;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        UPDATE bill_transaction
+        SET settled='Y'
+        WHERE user_id=_user_id AND owed_id=_owed_id AND bill_id=_bill_id;
+    END LOOP;
+    
+    CLOSE c1;
+
+END //
+DELIMITER ;
 ---------------------------------------------------------------------------------------------
 -- to get balances
-SELECT s1.collect_amount - s2.owed_amount 
+SELECT 
+    final2.logged_in_user,
+    MAX(CASE WHEN final2.logged_in_user=u.user_id THEN u.name END) AS logged_in_user_name,
+    final2.checking_with_user,
+    MAX(CASE WHEN final2.checking_with_user=u.user_id THEN u.name END) AS checking_with_user_name,
+    CASE 
+        WHEN final2.net_amt > 0 THEN 'COLLECT' 
+        WHEN final2.net_amt < 0 THEN 'PAY' 
+        ELSE 'SETTLED'
+        END AS collect_or_pay,
+    final2.net_amt
 FROM (
     SELECT 
-    IFNULL(sum(amount),0) AS collect_amount
-    FROM bill_transaction
-    WHERE user_id=3 AND owed_id=1
-) AS s1 
-JOIN (
-    SELECT IFNULL(sum(amount),0) AS owed_amount
-    FROM bill_transaction
-    WHERE user_id=1 AND owed_id=3
-) AS s2;
+        CASE WHEN net_amt > 0 THEN s1_user_id ELSE s2_owed_id END AS logged_in_user,
+        -- u.name AS logged_in_user_name,
+        CASE WHEN net_amt > 0 THEN s1_owed_id ELSE s2_user_id END AS checking_with_user,
+        -- CASE WHEN net_amt > 0 THEN 'COLLECT' ELSE 'PAY' END AS collect_or_pay,
+        net_amt
+    FROM (
+        SELECT 
+            s1.user_id as s1_user_id,
+            s1.owed_id as s1_owed_id,
+            s2.user_id as s2_user_id, 
+            s2.owed_id as s2_owed_id,
+            s1.collect_amount - s2.owed_amount as net_amt
+        FROM (
+            SELECT 
+            IFNULL(sum(amount),0) AS collect_amount, user_id, owed_id
+            FROM bill_transaction
+            WHERE user_id=1 AND owed_id=7
+        ) AS s1 
+        JOIN (
+            SELECT IFNULL(sum(amount),0) AS owed_amount, user_id, owed_id
+            FROM bill_transaction
+            WHERE user_id=7 AND owed_id=1
+        ) AS s2
+    ) AS final
+) AS final2
+JOIN users u 
+WHERE final2.logged_in_user IS NOT NULL
+GROUP BY
+final2.logged_in_user,
+final2.checking_with_user,
+CASE 
+    WHEN final2.net_amt > 0 THEN 'COLLECT' 
+    WHEN final2.net_amt < 0 THEN 'PAY' 
+    ELSE 'SETTLED'
+    END,
+final2.net_amt;
+-- ON final2.logged_in_user=u.user_id
+-- AND final2.checking_with_user = u.user_id;
 
 -- to get all users mapping
 SELECT DISTINCT gu2.user_id AS owed_id
@@ -450,4 +692,77 @@ LEFT JOIN (
 ) gu_count ON b.group_id = gu_count.group_id
 WHERE u.user_id = 3
 ORDER BY b.bill_created_at DESC ;
+
+------------------------------------------------------
+SELECT 
+    gu.group_id, 
+    s1.user_id AS user_id, 
+    s1.is_member AS user_id_member, 
+    gu.user_id AS owed_id, 
+    gu.is_member AS owed_id_member, 
+    gu.settled 
+FROM groups_users gu 
+JOIN (
+    SELECT 
+        group_id,
+        user_id,
+        is_member 
+    FROM groups_users
+    WHERE user_id=1
+    AND is_member='Y'
+) AS s1 ON gu.group_id IN (s1.group_id) AND gu.user_id=2
+WHERE gu.is_member='Y';
+------------------------------------------------------
+SELECT
+    bt.bill_id,
+    bt.user_id,
+    bt.owed_id,
+    bt.settled
+    FROM bill_transaction bt
+    WHERE bt.user_id=1 AND bt.owed_id=2
+UNION ALL
+SELECT
+    bt.bill_id,
+    bt.user_id,
+    bt.owed_id,
+    bt.settled
+    FROM bill_transaction bt
+    WHERE bt.user_id=2 AND bt.owed_id=1;
+------------------------------------------------------
+SELECT DISTINCT final.settled FROM (
+SELECT 
+    bt.settled 
+FROM bill_transaction bt
+JOIN bills b ON bt.bill_id=b.bill_id
+JOIN groups g ON b.group_id = g.group_id
+WHERE g.group_name = 'AB' AND bt.user_id=3
+UNION ALL 
+SELECT 
+    bt.settled 
+FROM bill_transaction bt
+JOIN bills b ON bt.bill_id=b.bill_id
+JOIN groups g ON b.group_id = g.group_id
+WHERE g.group_name = 'AB' AND bt.owed_id=3
+) AS final
+
+------------------------------------------------------
+SELECT 
+    bt.user_id, 
+    MAX(CASE WHEN bt.user_id=u.user_id THEN u.name END) AS user1,
+    bt.owed_id, 
+    MAX(CASE WHEN bt.owed_id=u.user_id THEN u.name END) AS user2,
+    g.group_id, 
+    bt.amount, 
+    bt.settled 
+FROM bill_transaction bt
+JOIN bills b ON bt.bill_id=b.bill_id
+JOIN groups g ON b.group_id = g.group_id
+JOIN users u
+WHERE g.group_name = 'AB'
+GROUP BY
+    bt.user_id, 
+    bt.owed_id, 
+    g.group_id, 
+    bt.amount, 
+    bt.settled;
 ---------------------------------------------------------------------------------------------

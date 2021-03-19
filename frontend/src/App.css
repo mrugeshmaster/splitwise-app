@@ -49,3 +49,9 @@
 .paid {
   color: darkcyan;
 }
+
+.balanceItem {
+  /* min-width: 100%; */
+  justify-content: center;
+  align-items: center;
+}

@@ -8,11 +8,12 @@ import '../App.css';
 class RecentActivityCell extends Component {
   render() {
     const { activity } = this.props;
+    console.log(activity.bill_created_at);
     return (
       <Row>
         <Col>
           <Row>
-            <b>{activity.paid_by_name}</b>
+            <b>{activity.bill_paid_by === activity.user_id ? 'You' : `${activity.paid_by_name}` }</b>
             &nbsp;added&nbsp;
             <b>
               "
@@ -35,7 +36,12 @@ class RecentActivityCell extends Component {
             {activity.split_amount}
           </Row>
           <Row>
-            <Moment tz={localStorage.getItem('timezone')} className="billdate" format="dddd">{activity.bill_created_at}</Moment>
+            <Moment
+              date={Date.UTC(activity.bill_created_at)}
+              tz={localStorage.getItem('timezone')}
+              className="billdate"
+              format="dddd"
+            />
           </Row>
         </Col>
       </Row>
