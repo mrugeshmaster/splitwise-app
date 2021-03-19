@@ -65,15 +65,15 @@ class Login extends Component {
         <NavBar />
         <div>
           <Row>
-            <Col xs lg="2">{'\u00A0'}</Col>
-            <Col>
+            <Col xs md="1">{'\u00A0'}</Col>
+            <Col className="mt-5">
               <img src={SplitwiseImage} className="img-fluid rounded float-right" style={{ height: 200, width: 200 }} alt="Splitwise" />
             </Col>
             <Col>
               <div>
                 <div className="login-form">
                   <div className="main-div">
-                    <div className="panel">
+                    <div className="panel mt-4">
                       <h2>WELCOME TO SPLITWISE</h2>
                     </div>
                     <br />

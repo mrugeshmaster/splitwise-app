@@ -37,7 +37,6 @@ class NewGroup extends Component {
         this.setState({
           message: response.data.message,
         });
-        console.log(response);
       }).catch((err) => {
         this.setState({
           message: err.response.data.message,
@@ -107,7 +106,6 @@ class NewGroup extends Component {
               <hr />
               <h5>GROUP MEMBERS</h5>
               <Form>
-                {/* <Form.Row>{personInvite}</Form.Row> */}
                 {selfMember}
                 <div>
                   {invitationForms}

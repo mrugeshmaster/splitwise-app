@@ -4,7 +4,7 @@
 /* eslint-disable array-callback-return */
 import React, { Component } from 'react';
 import {
-  Modal, Button, Form, Row,
+  Modal, Button, Form, Row, Col,
 } from 'react-bootstrap';
 import axios from 'axios';
 import apiHost from '../config';
@@ -13,12 +13,7 @@ import SearchBar from './SearchBar';
 class SettleUpModal extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      // keyword: '',
-      names: this.props.payNames,
-      // namesList: [],
-      searchTerm: '',
-    };
+    this.state = {};
   }
 
   onChange = (e) => {
@@ -27,30 +22,31 @@ class SettleUpModal extends Component {
     });
   }
 
-  handleSave = () => {
+  onSearchName = (name) => {
+    this.setState({
+      owedTo: name,
+    });
+  }
+
+  onSave = () => {
     const data = {
       user_id: localStorage.getItem('user_id'),
       owedTo: this.state.owedTo,
       settleAmount: this.state.settleAmount,
     };
+    console.log(data);
     axios.post(`${apiHost}/api/settle`, data)
       .then((response) => {
-        console.log(response);
+        if (response.data.message === 'BALANCE_SETTLED') {
+          this.props.onClose();
+        }
       }).catch((err) => {
-        console.log(err);
+        console.log(err.response.data);
       });
   }
 
-  editSearchTerm = (e) => {
-    this.setState({
-      searchTerm: e.target.value,
-    });
-  }
-
-  dynamicSearch = () => this.state.names.filter((name) => name.toLowerCase().includes(this.state.searchTerm.toLowerCase()));
-
   render() {
-    // console.log(this.state.namesList);
+    console.log(`Props: ${this.props.payNames}`);
     return (
       <Modal show={this.props.show} onHide={this.props.onClose}>
         <Modal.Header closeButton>
@@ -58,31 +54,34 @@ class SettleUpModal extends Component {
             <Row>
               Settle Up
             </Row>
-            <Row>
-              You Paid:
-              &nbsp;
-              <Form.Control
-                type="text"
-                value={this.state.searchTerm}
-                onChange={this.editSearchTerm}
-              />
-              <SearchBar names={this.dynamicSearch()} />
-            </Row>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form.Control
-            name="settleAmount"
-            type="text"
-            placeholder="0.00"
-            onChange={this.onChange}
-          />
+          <Row>
+            <Col md={{ span: 3 }}>
+              You Paid:
+            </Col>
+            <Col>
+              <SearchBar as="input" names={this.props.payNames} onSearchName={this.onSearchName} />
+            </Col>
+          </Row>
+          &nbsp;
+          <Row>
+            <Col>
+              <Form.Control
+                name="settleAmount"
+                type="text"
+                placeholder="0.00"
+                onChange={this.onChange}
+              />
+            </Col>
+          </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.onSave}>
+          <Button variant="secondary" onClick={this.props.onClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={this.props.onClose}>
+          <Button variant="primary" onClick={this.onSave}>
             Save
           </Button>
         </Modal.Footer>

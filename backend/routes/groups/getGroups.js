@@ -32,7 +32,7 @@ router.get('/:user_id', (req, res) => {
 });
 
 router.get('/grouplist/:user_id', (req, res) => {
-  console.log('Inside Group Get Request');
+  console.log('Inside Group List Get Request');
   // console.log('Req Body : ', req.body);
   const sql = `CALL Group_List_Get('${req.params.user_id}');`;
 
@@ -60,7 +60,7 @@ router.get('/grouplist/:user_id', (req, res) => {
 });
 
 router.get('/groupbalances/:group_name', (req, res) => {
-  console.log('Inside Group Get Request');
+  console.log('Inside Group Balances Get Request');
   // console.log('Req Body : ', req.body);
   const sql = `SELECT 
   bt.user_id, 
@@ -69,7 +69,8 @@ router.get('/groupbalances/:group_name', (req, res) => {
   MAX(CASE WHEN bt.owed_id=u.user_id THEN u.name END) AS user2,
   g.group_id, 
   bt.amount, 
-  bt.settled 
+  bt.settled,
+  bt.bill_id 
 FROM bill_transaction bt
 JOIN bills b ON bt.bill_id=b.bill_id
 JOIN groups g ON b.group_id = g.group_id
@@ -80,7 +81,8 @@ GROUP BY
   bt.owed_id, 
   g.group_id, 
   bt.amount, 
-  bt.settled;`;
+  bt.settled,
+  bt.bill_id;`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];

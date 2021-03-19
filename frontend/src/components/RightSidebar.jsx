@@ -13,8 +13,8 @@ class RightSidebar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      // settled: [],
       notSettled: [],
+      settled: [],
     };
     this.getUserGroupBalances();
   }
@@ -28,8 +28,16 @@ class RightSidebar extends Component {
               return res;
             }
           });
+          const settledList = response.data.filter((res) => {
+            console.log(res);
+            if (res.settled === 'Y') {
+              return res;
+            }
+          });
+          console.log(settledList);
           this.setState({
             notSettled: list,
+            settled: settledList,
           });
         }
       }).catch((err) => {
@@ -38,8 +46,7 @@ class RightSidebar extends Component {
   }
 
   render() {
-    console.log('Balances');
-    console.log(this.state.notSettled);
+    console.log(`Settled: ${this.state.settled}`);
     const collectElements = [];
     const payElements = [];
     if (this.state && this.state.notSettled && this.state.notSettled.length > 0) {
@@ -60,6 +67,8 @@ class RightSidebar extends Component {
           pay.set(this.state.notSettled[i].user2, this.state.notSettled[i].amount);
         }
       }
+      console.log(collect);
+      console.log(pay);
       collect.forEach((key, value) => {
         collectElements.push(
           <Row className="paid pt-2">
@@ -83,6 +92,9 @@ class RightSidebar extends Component {
         );
       });
     }
+    console.log(collectElements);
+    console.log(payElements);
+
     return (
       <Container className="mt-5">
         <div className="pt-5 text-muted">Group Members</div>

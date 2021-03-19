@@ -475,6 +475,7 @@ BEGIN
         SELECT count(user_id) AS no_of_users,
                 group_id
         FROM groups_users gu
+        WHERE gu.is_member='Y'
         GROUP BY group_id
     ) gu_count ON b.group_id = gu_count.group_id
     LEFT JOIN (
@@ -587,6 +588,7 @@ BEGIN
     read_loop: LOOP
         FETCH c1 INTO _bill_id, _user_id, _owed_id;
         IF done THEN
+            SELECT 'BALANCE_SETTLED' AS flag;
             LEAVE read_loop;
         END IF;
         UPDATE bill_transaction
@@ -747,22 +749,24 @@ WHERE g.group_name = 'AB' AND bt.owed_id=3
 
 ------------------------------------------------------
 SELECT 
-    bt.user_id, 
-    MAX(CASE WHEN bt.user_id=u.user_id THEN u.name END) AS user1,
-    bt.owed_id, 
-    MAX(CASE WHEN bt.owed_id=u.user_id THEN u.name END) AS user2,
-    g.group_id, 
-    bt.amount, 
-    bt.settled 
+  bt.user_id, 
+  MAX(CASE WHEN bt.user_id=u.user_id THEN u.name END) AS user1,
+  bt.owed_id, 
+  MAX(CASE WHEN bt.owed_id=u.user_id THEN u.name END) AS user2,
+  g.group_id, 
+  bt.amount, 
+  bt.settled,
+  bt.bill_id 
 FROM bill_transaction bt
 JOIN bills b ON bt.bill_id=b.bill_id
 JOIN groups g ON b.group_id = g.group_id
 JOIN users u
-WHERE g.group_name = 'AB'
+WHERE g.group_name = 'Trip'
 GROUP BY
-    bt.user_id, 
-    bt.owed_id, 
-    g.group_id, 
-    bt.amount, 
-    bt.settled;
+  bt.user_id, 
+  bt.owed_id, 
+  g.group_id, 
+  bt.amount, 
+  bt.settled,
+  bt.bill_id;
 ---------------------------------------------------------------------------------------------

@@ -35,6 +35,8 @@ class Home extends Component {
   onHideSettleUpModal = () => {
     this.setState({
       showSettleUpModal: false,
+      collectBalances: [],
+      payBalances: [],
     });
     this.getBalances();
   }
@@ -91,7 +93,7 @@ class Home extends Component {
         payNames.push(payBal.user2_name);
       });
     }
-    console.log(payNames);
+    console.log(`PayNames ${payNames}`);
     return (
       <div>
         <NavBar />

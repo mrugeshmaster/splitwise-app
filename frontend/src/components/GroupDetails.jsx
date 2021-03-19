@@ -1,3 +1,4 @@
+/* eslint-disable react/no-access-state-in-setstate */
 /* eslint-disable array-callback-return */
 import React, { Component } from 'react';
 import axios from 'axios';
@@ -18,14 +19,9 @@ class GroupDetails extends Component {
       group_name: this.props.location.state.group_name,
       groupDetails: [],
       showExpenseModal: false,
-      // showSettleUpModal: false,
     };
     this.getGroupDetails();
   }
-
-  // componentDidMount() {
-  //   this.getGroupDetails();
-  // }
 
   getGroupDetails = async () => {
     await axios.get(`${apiHost}/api/groupdetails/user_id/${localStorage.getItem('user_id')}/group_name/${this.props.location.state.group_name}`)
@@ -36,7 +32,7 @@ class GroupDetails extends Component {
           });
         }
       }).catch((err) => {
-        console.log(err);
+        console.log(err.response.data);
       });
   }
 
@@ -51,17 +47,21 @@ class GroupDetails extends Component {
       showExpenseModal: false,
     });
     this.getGroupDetails();
+    window.location.reload();
   }
 
   render() {
-    console.log('In render');
-    console.log(`Group Details 0 :${JSON.stringify(this.state.groupDetails[0])}`);
     const groupElements = [];
 
     if (this.state && this.state.groupDetails && this.state.groupDetails.length > 0) {
       this.state.groupDetails.map((groupDetail) => {
         const groupElement = (
-          <ListGroup.Item><GroupDetailsCell groupDetail={groupDetail} /></ListGroup.Item>
+          <ListGroup.Item>
+            <GroupDetailsCell
+              key={groupDetail}
+              groupDetail={groupDetail}
+            />
+          </ListGroup.Item>
         );
         groupElements.push(groupElement);
       });
@@ -98,6 +98,8 @@ class GroupDetails extends Component {
               <RightSidebar
                 key={this.state.group_name}
                 groupName={this.state.group_name}
+                updateChild={this.state.updateChild}
+                onUpdateChild={this.onUpdateChild}
               />
             </Col>
           </Row>

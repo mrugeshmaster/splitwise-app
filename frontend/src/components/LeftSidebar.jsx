@@ -46,6 +46,7 @@ class LeftSidebar extends Component {
     return (
       <Nav defaultActiveKey="/home" className="flex-column mt-3">
         <Nav.Link href="/home">Dashboard</Nav.Link>
+        <Nav.Link href="/groups">My Groups</Nav.Link>
         <Nav.Link href="/recentactivity">Recent Activity</Nav.Link>
         <hr />
         <div className="px-3 text-muted">Groups</div>
