@@ -97,7 +97,7 @@ GROUP BY
       res.writeHead(401, {
         'Content-Type': 'application/json',
       });
-      res.end(JSON.stringify({ message: 'NO_GROUPS' }));
+      res.end(JSON.stringify({ message: 'NO_BILLS' }));
     }
   }).catch((err) => {
     res.writeHead(500, {

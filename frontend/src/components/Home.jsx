@@ -7,6 +7,7 @@ import {
 } from 'react-bootstrap';
 import { Divider } from '@material-ui/core';
 import axios from 'axios';
+import numeral from 'numeral';
 import apiHost from '../config';
 import LeftSidebar from './LeftSidebar';
 import NavBar from './NavBar';
@@ -23,7 +24,7 @@ class Home extends Component {
       payBalances: [],
     };
     this.getBalances();
-    document.title = 'Dashboard • Splitwise';
+    document.title = 'Splitwise';
   }
 
   onShowSettleUpModal = () => {
@@ -93,7 +94,7 @@ class Home extends Component {
         payNames.push(payBal.user2_name);
       });
     }
-    console.log(`PayNames ${payNames}`);
+    // console.log(`PayNames ${payNames}`);
     return (
       <div>
         <NavBar />
@@ -121,19 +122,19 @@ class Home extends Component {
                   <Row className="balanceItem">
                     Total Balance
                   </Row>
-                  <Row className="balanceItem">{collectBalance - payBalance}</Row>
+                  <Row className="balanceItem">{numeral(collectBalance - payBalance).format('$0,0.00')}</Row>
                 </ListGroup.Item>
                 <ListGroup.Item as={Col}>
                   <Row className="balanceItem">you owe</Row>
-                  <Row className="balanceItem">{payBalance}</Row>
+                  <Row className="balanceItem">{numeral(payBalance).format('$0,0.00')}</Row>
                 </ListGroup.Item>
                 <ListGroup.Item as={Col}>
                   <Row className="balanceItem">you are owed</Row>
-                  <Row className="balanceItem">{collectBalance}</Row>
+                  <Row className="balanceItem">{numeral(collectBalance).format('$0,0.00')}</Row>
                 </ListGroup.Item>
               </ListGroup>
             </Row>
-            <Row>
+            <Row className="mt-3">
               <Col>
                 <h4 className="text-muted">You Owe</h4>
                 <ListGroup variant="flush">

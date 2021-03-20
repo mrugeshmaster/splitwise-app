@@ -71,7 +71,7 @@ class SettleUpModal extends Component {
               <Form.Control
                 name="settleAmount"
                 type="text"
-                placeholder="0.00"
+                placeholder="$0.00"
                 onChange={this.onChange}
               />
             </Col>

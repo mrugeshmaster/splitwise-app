@@ -3,7 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.send({ express: 'Get : Pong' });
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+  });
+  res.end(JSON.stringify({ message: 'Pong' }));
 });
 
 module.exports = router;

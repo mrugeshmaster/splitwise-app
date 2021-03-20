@@ -5,9 +5,9 @@ import {
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { Divider } from '@material-ui/core';
 import NavBar from './NavBar';
 import apiHost from '../config';
-// import SplitwiseImage from '../images/logo.svg';
 import InvitationForm from './InvitationForm';
 
 class NewGroup extends Component {
@@ -16,6 +16,20 @@ class NewGroup extends Component {
     this.state = {
       invitationListSize: 1,
     };
+    this.getAllNames();
+  }
+
+  getAllNames = async () => {
+    await axios.get(`${apiHost}/api/allnames/${localStorage.getItem('user_id')}`)
+      .then((response) => {
+        this.setState({
+          names: response.data,
+        });
+      }).catch((err) => {
+        this.setState({
+          message: err.response,
+        });
+      });
   }
 
   onChange = (e) => {
@@ -52,7 +66,7 @@ class NewGroup extends Component {
   onUpload = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('image', this.state.file);
+    formData.append('groupImage', this.state.file);
     const uploadConfig = {
       headers: {
         'content-type': 'multipart/form-data',
@@ -60,12 +74,12 @@ class NewGroup extends Component {
     };
     axios.post(`${apiHost}/api/upload/group/${this.state.groupName}`, formData, uploadConfig)
       .then((response) => {
-        alert('Image uploaded successfully!');
+        alert('Group Image uploaded successfully!');
         this.setState({
           filename: 'Choose your avatar',
-          image: response.data.message,
+          groupImage: response.data.message,
         });
-        console.log(this.state.image);
+        console.log(this.state.groupImage);
         // this.getUser();
       })
       .catch((err) => {
@@ -83,6 +97,7 @@ class NewGroup extends Component {
   }
 
   render() {
+    console.log(this.state.names);
     let selfMember = null;
     const invitationForms = [];
     let errorMessage = null;
@@ -92,23 +107,32 @@ class NewGroup extends Component {
     }
     selfMember = (
       <Form.Row>
-        <Form.Group as={Col} md="6">
+        <Form.Group as={Col} md="4">
           <Form.Control type="text" name="invite_name" placeholder={localStorage.getItem('name')} disabled />
         </Form.Group>
-        <Form.Group as={Col} md="6">
+        <Form.Group as={Col} md="4">
           <Form.Control type="email" name="invite_email" placeholder={localStorage.getItem('email')} disabled />
         </Form.Group>
       </Form.Row>
     );
 
-    for (let i = 1; i <= this.state.invitationListSize; i += 1) {
-      invitationForms.push(<InvitationForm groupName={this.state.groupName} onCancel={this.onCancel} />);
+    if (this.state.names && this.state.names.length > 0) {
+      console.log(this.state.names);
+      for (let i = 1; i <= this.state.invitationListSize; i += 1) {
+        invitationForms.push(
+          <InvitationForm
+            names={this.state.names}
+            groupName={this.state.groupName}
+            onCancel={this.onCancel}
+          />,
+        );
+      }
     }
 
-    let image = null;
+    let groupImage = null;
     const filename = this.state.filename || 'Choose Group Image';
     if (this.state) {
-      image = `${apiHost}/api/upload/group/${this.state.image}`;
+      groupImage = `${apiHost}/api/upload/group/${this.state.groupImage}`;
     }
 
     return (
@@ -117,30 +141,39 @@ class NewGroup extends Component {
         <div className="mt-5">
           <Row>
             <Col md={{ span: 3, offset: 2 }}>
-              <Image style={{ width: '17rem' }} src={image} />
               <Form onSubmit={this.onUpload}>
-                <Form.Group as={Col} className="lg-3">
-                  <Form.File
-                    className="mt-3"
-                    name="image"
-                    id="image"
-                    style={{ width: '17rem' }}
-                    accept="image/*"
-                    label={filename}
-                    onChange={this.onGroupImageChange}
-                    custom
-                  />
-                  <br />
-                  <Button type="submit">Upload</Button>
-                </Form.Group>
+                <Form.Row className="mt-4">
+                  <Form.Group as={Col} md={3}>
+                    <Image style={{ width: '17rem' }} src={groupImage} />
+                  </Form.Group>
+                </Form.Row>
+                <Form.Row>
+                  <Form.Group as={Col} md={3}>
+                    <Form.File
+                      className="mt-3"
+                      name="image"
+                      id="image"
+                      style={{ width: '17rem' }}
+                      accept="image/*"
+                      label={filename}
+                      onChange={this.onGroupImageChange}
+                      custom
+                    />
+                  </Form.Group>
+                </Form.Row>
+                <Form.Row>
+                  <Form.Group as={Col} md={3} className="d-flex" style={{ justifyContent: 'flex-end' }}>
+                    <Button type="submit">Upload</Button>
+                  </Form.Group>
+                </Form.Row>
               </Form>
             </Col>
-            <Col md={{ span: 3 }}>
-              <h5>START A NEW GROUP</h5>
+            <Col md={{ span: 6 }}>
+              <h5 className="text-muted">START A NEW GROUP</h5>
               {errorMessage}
               <Form onSubmit={this.onCreate}>
                 <Form.Row>
-                  <Form.Group as={Col} md="8">
+                  <Form.Group as={Col} md="4">
                     <Form.Control
                       type="text"
                       name="groupName"
@@ -154,8 +187,8 @@ class NewGroup extends Component {
                   </Form.Group>
                 </Form.Row>
               </Form>
-              <hr />
-              <h5>GROUP MEMBERS</h5>
+              <Divider />
+              <h5 className="text-muted">GROUP MEMBERS</h5>
               <Form>
                 {selfMember}
                 <div>

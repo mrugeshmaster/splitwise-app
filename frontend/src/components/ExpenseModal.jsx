@@ -31,6 +31,9 @@ class ExpenseModal extends Component {
           this.props.handleClose();
         }
       }).catch((err) => {
+        // this.setState({
+        //   message: err.response.data.message,
+        // });
         console.log(err);
       });
   }
@@ -64,7 +67,7 @@ class ExpenseModal extends Component {
             <Form.Control
               name="bill_amount"
               type="text"
-              placeholder="0.00"
+              placeholder="$0.00"
               onChange={this.onChange}
             />
           </Form.Group>

@@ -23,11 +23,14 @@ class SearchBar extends Component {
   }
 
   render() {
-    console.log(`Props: ${this.props.names}`);
+    // console.log(`Props: ${JSON.stringify(this.props.names)}`);
+    // let searchList = {};
+    // if (this.props.name && this.props.names.length > 0) {
     const searchList = this.props.names.map((name) => ({
       value: name,
       label: name,
     }));
+    // }
     return (
       <div>
         <Select

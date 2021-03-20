@@ -14,10 +14,22 @@ const imageStorage = multer.diskStorage({
   },
 });
 
+const groupImageStorage = multer.diskStorage({
+  destination: `${path.join(__dirname, '..')}/public/storage/groups`,
+  filename: (req, file, callback) => {
+    callback(null, `group_${req.params.groupName}_${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
+
 const upload = multer({
   storage: imageStorage,
   limits: { filesize: 1000000 },
 }).single('image');
+
+const uploadGroupImage = multer({
+  storage: groupImageStorage,
+  limits: { filesize: 1000000 },
+}).single('groupImage');
 
 router.post('/:user_id', (req, res) => {
   upload(req, res, (err) => {
@@ -45,11 +57,12 @@ router.post('/:user_id', (req, res) => {
   });
 });
 
-router.post('/group/:group_name', (req, res) => {
-  upload(req, res, (err) => {
+router.post('/group/:groupName', (req, res) => {
+  uploadGroupImage(req, res, (err) => {
     if (!err) {
       console.log('Inside upload POST request');
-      const sql = `UPDATE groups SET group_image='${req.file.filename}' WHERE user_id=${req.params.group_name}`;
+      const sql = `UPDATE groups SET group_image='${req.file.filename}' WHERE group_name='${req.params.groupName}'`;
+      console.log(sql);
       pool.query(sql).then((rows) => {
         res.writeHead(200, {
           'Content-Type': 'application/json',

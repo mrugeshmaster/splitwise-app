@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import Moment from 'react-moment';
 import 'moment-timezone';
+import numeral from 'numeral';
 import '../App.css';
 
 class RecentActivityCell extends Component {
@@ -33,7 +34,7 @@ class RecentActivityCell extends Component {
           >
             {activity.bill_paid_by === activity.user_id ? 'You paid' : 'You owe' }
             &nbsp;
-            {activity.split_amount}
+            {numeral(activity.split_amount).format('$0,0.00')}
           </Row>
           <Row>
             <Moment

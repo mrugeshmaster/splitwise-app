@@ -12,8 +12,8 @@ class LeftSidebar extends Component {
     this.getGroupList();
   }
 
-  getGroupList = () => {
-    axios.get(`${apiHost}/api/getGroups/grouplist/${localStorage.getItem('user_id')}`)
+  getGroupList = async () => {
+    await axios.get(`${apiHost}/api/getGroups/grouplist/${localStorage.getItem('user_id')}`)
       .then((response) => {
         if (response.data[0]) {
           this.setState({
