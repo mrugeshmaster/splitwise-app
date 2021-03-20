@@ -1,12 +1,16 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 const pool = require('../pool.js');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   // console.log('Inside Signup Post Request');
   // console.log('Req Body : ', req.body);
-  const sql = `CALL SIGNUP_Post('${req.body.name}', '${req.body.email}', '${req.body.password}');`;
+  const salt = await bcrypt.genSalt(10);
+  const encryptPassword = await bcrypt.hash(req.body.password, salt);
+
+  const sql = `CALL SIGNUP_Post('${req.body.name}', '${req.body.email}', '${encryptPassword}');`;
 
   pool.query(sql).then((rows) => {
     const result = rows[0];

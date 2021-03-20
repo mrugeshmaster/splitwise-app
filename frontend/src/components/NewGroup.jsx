@@ -15,6 +15,8 @@ class NewGroup extends Component {
     super(props);
     this.state = {
       invitationListSize: 1,
+      imageFormValidated: false,
+      saveFormValidated: false,
     };
     this.getAllNames();
   }
@@ -39,21 +41,30 @@ class NewGroup extends Component {
   }
 
   onCreate = (e) => {
-    e.preventDefault();
-    const data = {
-      user_id: localStorage.getItem('user_id'),
-      groupName: this.state.groupName,
-    };
-    axios.post(`${apiHost}/api/createGroup`, data)
-      .then((response) => {
-        this.setState({
-          message: response.data.message,
-        });
-      }).catch((err) => {
-        this.setState({
-          message: err.response.data.message,
-        });
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setState({
+        saveFormValidated: true,
       });
+    } else {
+      e.preventDefault();
+      const data = {
+        user_id: localStorage.getItem('user_id'),
+        groupName: this.state.groupName,
+      };
+      axios.post(`${apiHost}/api/createGroup`, data)
+        .then((response) => {
+          this.setState({
+            message: response.data.message,
+          });
+        }).catch((err) => {
+          this.setState({
+            message: err.response.data.message,
+          });
+        });
+    }
   }
 
   onGroupImageChange = (e) => {
@@ -64,27 +75,36 @@ class NewGroup extends Component {
   }
 
   onUpload = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('groupImage', this.state.file);
-    const uploadConfig = {
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    };
-    axios.post(`${apiHost}/api/upload/group/${this.state.groupName}`, formData, uploadConfig)
-      .then((response) => {
-        alert('Group Image uploaded successfully!');
-        this.setState({
-          filename: 'Choose your avatar',
-          groupImage: response.data.message,
-        });
-        console.log(this.state.groupImage);
-        // this.getUser();
-      })
-      .catch((err) => {
-        console.log(err.response);
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setState({
+        imageFormValidated: true,
       });
+    } else {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('groupImage', this.state.file);
+      const uploadConfig = {
+        headers: {
+          'content-type': 'multipart/form-data',
+        },
+      };
+      axios.post(`${apiHost}/api/upload/group/${this.state.groupName}`, formData, uploadConfig)
+        .then((response) => {
+          alert('Group Image uploaded successfully!');
+          this.setState({
+            filename: 'Choose your avatar',
+            groupImage: response.data.message,
+          });
+          console.log(this.state.groupImage);
+          // this.getUser();
+        })
+        .catch((err) => {
+          console.log(err.response);
+        });
+    }
   }
 
   onCancel = () => {
@@ -104,6 +124,17 @@ class NewGroup extends Component {
 
     if (this.state.message === 'DUPLICATE_GROUP') {
       errorMessage = <Alert variant="danger">Group Name Taken. Please enter unique group name.</Alert>;
+    }
+    if (this.state.message === 'GROUP_CREATED') {
+      errorMessage = (
+        <Alert variant="success">
+          Group
+          &nbsp;
+          {this.state.groupName}
+          &nbsp;
+          created.
+        </Alert>
+      );
     }
     selfMember = (
       <Form.Row>
@@ -141,7 +172,7 @@ class NewGroup extends Component {
         <div className="mt-5">
           <Row>
             <Col md={{ span: 3, offset: 2 }}>
-              <Form onSubmit={this.onUpload}>
+              <Form noValidate validated={this.state.imageFormValidated} onSubmit={this.onUpload}>
                 <Form.Row className="mt-4">
                   <Form.Group as={Col} md={3}>
                     <Image style={{ width: '17rem' }} src={groupImage} />
@@ -159,6 +190,9 @@ class NewGroup extends Component {
                       onChange={this.onGroupImageChange}
                       custom
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please upload a group image.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
@@ -170,8 +204,8 @@ class NewGroup extends Component {
             </Col>
             <Col md={{ span: 6 }}>
               <h5 className="text-muted">START A NEW GROUP</h5>
-              {errorMessage}
-              <Form onSubmit={this.onCreate}>
+              <div as={Col} md="4">{errorMessage}</div>
+              <Form noValidate validated={this.state.saveFormValidated} onSubmit={this.onCreate}>
                 <Form.Row>
                   <Form.Group as={Col} md="4">
                     <Form.Control
@@ -181,6 +215,9 @@ class NewGroup extends Component {
                       onChange={this.onChange}
                       required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please enter a group name.
+                    </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group as={Col} md="3">
                     <Button type="submit">Create</Button>

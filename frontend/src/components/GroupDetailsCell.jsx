@@ -8,18 +8,18 @@ class GroupDetailsCell extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      groupDetail: this.props.groupDetail,
+      // groupDetail: this.props.groupDetail,
     };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.groupDetail !== prevState.groupDetail) {
-      return {
-        groupDetail: nextProps.groupDetail,
-      };
-    }
-    return { groupDetail: null };
-  }
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   if (nextProps.groupDetail !== prevState.groupDetail) {
+  //     return {
+  //       groupDetail: nextProps.groupDetail,
+  //     };
+  //   }
+  //   return { groupDetail: null };
+  // }
 
   render() {
     console.log('Inside group details cell');

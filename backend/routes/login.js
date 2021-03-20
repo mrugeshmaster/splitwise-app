@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 const pool = require('../pool.js');
@@ -9,7 +10,7 @@ router.post('/', (req, res) => {
   pool.query(sql).then((rows) => {
     const result = rows[0];
     if (result && result.length > 0 && result[0][0].flag === 1) {
-      if (req.body.password === result[0][0].password) {
+      if (bcrypt.compare(req.body.password, result[0][0].student_password)) {
         res.cookie('cookie', 'admin', { maxAge: 900000, httpOnly: false, path: '/' });
         req.session.user = req.body.email;
         const userObj = {

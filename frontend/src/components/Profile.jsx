@@ -10,7 +10,9 @@ import apiHost from '../config';
 class Profile extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      validated: false,
+    };
     this.getUser();
   }
 
@@ -59,46 +61,65 @@ class Profile extends Component {
   }
 
   onUpload = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('image', this.state.file);
-    const uploadConfig = {
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    };
-    axios.post(`${apiHost}/api/upload/${localStorage.getItem('user_id')}`, formData, uploadConfig)
-      .then((response) => {
-        // alert('Image uploaded successfully!');
-        this.setState({
-          filename: 'Choose your avatar',
-          image: response.data.message,
-        });
-        // console.log(this.state.image);
-        // this.getUser();
-      })
-      .catch((err) => {
-        console.log(err.response);
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setState({
+        validated: true,
       });
+    } else {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('image', this.state.file);
+      const uploadConfig = {
+        headers: {
+          'content-type': 'multipart/form-data',
+        },
+      };
+      axios.post(`${apiHost}/api/upload/${localStorage.getItem('user_id')}`, formData, uploadConfig)
+        .then((response) => {
+          // alert('Image uploaded successfully!');
+          this.setState({
+            filename: 'Choose your avatar',
+            image: response.data.message,
+          });
+          // console.log(this.state.image);
+          // this.getUser();
+        })
+        .catch((err) => {
+          console.log(err.response);
+        });
+    }
   }
 
   onSave = (e) => {
-    e.preventDefault();
-    const data = { ...this.state };
-    // console.log(JSON.stringify(data));
-    axios.put(`${apiHost}/api/profile`, data)
-      .then((response) => {
-        this.setState({
-          message: response.data.message,
-        });
-      })
-      .catch((err) => {
-        if (err.response && err.response.data) {
-          this.setState({
-            message: err.response.data,
-          });
-        }
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setState({
+        validated: true,
       });
+    } else {
+      e.preventDefault();
+      const data = { ...this.state };
+      // console.log(JSON.stringify(data));
+      axios.put(`${apiHost}/api/profile`, data)
+        .then((response) => {
+          this.setState({
+            message: response.data.message,
+            // validated: true,
+          });
+        })
+        .catch((err) => {
+          if (err.response && err.response.data) {
+            this.setState({
+              message: err.response.data,
+            });
+          }
+        });
+    }
   }
 
   render() {
@@ -125,7 +146,7 @@ class Profile extends Component {
           </Row>
           <Row>
             <Col md={{ span: 3, offset: 1 }}>
-              <Form onSubmit={this.onUpload}>
+              <Form noValidate validated={this.state.validated} onSubmit={this.onUpload}>
                 <Form.Row className="mt-4">
                   <Form.Group as={Col} md={3}>
                     <Image style={{ width: '17rem' }} src={image} />
@@ -142,7 +163,11 @@ class Profile extends Component {
                       label={filename}
                       onChange={this.onAvatarChange}
                       custom
+                      required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please upload an Avatar.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
@@ -153,7 +178,7 @@ class Profile extends Component {
               </Form>
             </Col>
             <Col>
-              <Form onSubmit={this.onSave}>
+              <Form noValidate validated={this.state.validated} onSubmit={this.onSave}>
                 <Form.Row>
                   <Form.Group as={Col} md="3">
                     {/* Name */}
@@ -165,6 +190,9 @@ class Profile extends Component {
                       onChange={this.onChange}
                       required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please enter your name.
+                    </Form.Control.Feedback>
                   </Form.Group>
                   &nbsp;&nbsp;&nbsp;
                   <Form.Group as={Col} md="3">
@@ -183,6 +211,9 @@ class Profile extends Component {
                       <option>EUR</option>
                       <option>CAD</option>
                     </Form.Control>
+                    <Form.Control.Feedback type="invalid">
+                      Please select a currency.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
@@ -196,6 +227,9 @@ class Profile extends Component {
                       onChange={this.onChange}
                       required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please enter a valid email.
+                    </Form.Control.Feedback>
                   </Form.Group>
                   &nbsp;&nbsp;&nbsp;
                   <Form.Group as={Col} md="3">
@@ -290,6 +324,9 @@ class Profile extends Component {
                       <option value="Pacific/Fiji">(GMT+12:00) Fiji, Kamchatka, Marshall Is.</option>
                       <option value="Pacific/Tongatapu">(GMT+13:00) Nuku&apos;alofa</option>
                     </Form.Control>
+                    <Form.Control.Feedback type="invalid">
+                      Please select a timezone.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
@@ -303,6 +340,9 @@ class Profile extends Component {
                       onChange={this.onChange}
                       required
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Please enter a phone number.
+                    </Form.Control.Feedback>
                   </Form.Group>
                   &nbsp;&nbsp;&nbsp;
                   <Form.Group as={Col} md="3">
@@ -327,6 +367,9 @@ class Profile extends Component {
                       <option value="sv">Svenska</option>
                       <option value="th">ภาษาไทย</option>
                     </Form.Control>
+                    <Form.Control.Feedback type="invalid">
+                      Please select a language.
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>

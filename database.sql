@@ -42,17 +42,17 @@ CREATE TABLE `groups_users` (
 
 DROP TABLE IF EXISTS `bills`;
 
-CREATE TABLE `bills` (
-    `bill_id` INT(10) NOT NULL AUTO_INCREMENT,
-    `group_id` INT(10) NOT NULL,
-    `bill_name` VARCHAR NOT NULL,
-    `bill_paid_by` INT(10) NOT NULL,
-    `bill_amount` INT(10) NOT NULL,
-    `bill_created_at` TIMESTAMP NOT NULL,
-    `settle` VARCHAR(1),
-    PRIMARY KEY (`bill_id`),
-    FOREIGN KEY (`group_id`) REFERENCES `groups`(`group_id`),
-    FOREIGN KEY (`bill_paid_by`) REFERENCES `users`(`user_id`)
+CREATE TABLE bills (
+    bill_id INT(10) NOT NULL AUTO_INCREMENT,
+    group_id INT(10) NOT NULL,
+    bill_name VARCHAR(255) NOT NULL,
+    bill_paid_by INT(10) NOT NULL,
+    bill_amount FLOAT NOT NULL,
+    bill_created_at TIMESTAMP NOT NULL,
+    settled VARCHAR(1),
+    PRIMARY KEY (bill_id),
+    FOREIGN KEY (group_id) REFERENCES groups(group_id),
+    FOREIGN KEY (bill_paid_by) REFERENCES users(user_id)
 );
 
 DROP TABLE IF EXISTS `bill_transaction`;
@@ -63,6 +63,7 @@ CREATE TABLE `bill_transaction` (
     `user_id` INT(10) NOT NULL,
     `owed_id` INT(10) NOT NULL,
     `amount` DOUBLE NOT NULL,
+    `settled` VARCHAR(3),
     PRIMARY KEY (`transaction_id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`),
     FOREIGN KEY (`owed_id`) REFERENCES `users`(`user_id`)
@@ -83,7 +84,7 @@ BEGIN
     IF EXISTS(SELECT group_id FROM groups WHERE group_name=in_group_name) THEN
         SELECT group_id INTO _group_id FROM groups WHERE group_name=in_group_name;
 
-        INSERT INTO bills (group_id, bill_name, bill_paid_by, bill_amount, bill_created_at, settle) 
+        INSERT INTO bills (group_id, bill_name, bill_paid_by, bill_amount, bill_created_at, settled) 
         VALUES (_group_id,in_bill_name,in_bill_paid_by,in_bill_amount,NOW(),'F');
 
         SELECT max(bill_id) INTO _bill_id FROM bills WHERE bill_name = in_bill_name;

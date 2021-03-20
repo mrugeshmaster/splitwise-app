@@ -23,14 +23,14 @@ class GroupDetails extends Component {
     this.getGroupDetails();
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.location.state.group_name !== prevState.group_name) {
-      return {
-        group_name: nextProps.location.state.group_name,
-      };
-    }
-    return { group_name: '' };
-  }
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   if (nextProps.location.state.group_name !== prevState.group_name) {
+  //     return {
+  //       group_name: nextProps.location.state.group_name,
+  //     };
+  //   }
+  //   return { group_name: '' };
+  // }
 
   getGroupDetails = async () => {
     await axios.get(`${apiHost}/api/groupdetails/user_id/${localStorage.getItem('user_id')}/group_name/${this.state.group_name}`)

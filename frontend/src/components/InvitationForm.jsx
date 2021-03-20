@@ -14,6 +14,8 @@ class InvitationForm extends Component {
       invitationEmail: '',
       email: '',
       showButtons: true,
+      validated: false,
+      nameErrorMessage: null,
     };
   }
 
@@ -40,44 +42,56 @@ class InvitationForm extends Component {
   }
 
   onInvite = (e) => {
-    e.preventDefault();
-    console.log(this.props.groupName);
-    const data = {
-      groupName: this.props.groupName,
-      invitationName: this.state.invitationName,
-      invitationEmail: this.state.invitationEmail,
-    };
-    console.log(`data: ${JSON.stringify(data)}`);
-    axios.post(`${apiHost}/api/inviteMember`, data)
-      .then((response) => {
-        console.log(response);
-        // alert('Invitation Sent');
-        this.setState({
-          showButtons: false,
-        });
-      }).catch((err) => {
-        console.log(err.response);
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setState({
+        validated: true,
       });
+    } else {
+      e.preventDefault();
+      console.log(this.props.groupName);
+      const data = {
+        groupName: this.props.groupName,
+        invitationName: this.state.invitationName,
+        invitationEmail: this.state.invitationEmail,
+      };
+      console.log(`data: ${JSON.stringify(data)}`);
+      axios.post(`${apiHost}/api/inviteMember`, data)
+        .then((response) => {
+          console.log(response);
+          // alert('Invitation Sent');
+          this.setState({
+            showButtons: false,
+          });
+        }).catch((err) => {
+          console.log(err.response);
+        });
+    }
   }
 
   onSearchName = async (name) => {
+    // const nameErrorMessage = null;
+    if (!name) {
+      this.setState({
+        nameErrorMessage: 'Please search a Name of User',
+      });
+    }
     const emailObj = this.state.names_email.find((res) => res.name === name);
     await this.setState({
       email: emailObj.email,
       invitationName: name,
       invitationEmail: emailObj.email,
+      nameErrorMessage: null,
     });
-    // this.setState({
-    //   invitationName: name,
-    //   invitationEmail: e.target.value,
-    // });
   }
 
   render() {
     console.log(this.props.names);
     return (
       <div>
-        <Form>
+        <Form noValidate validated={this.state.validated}>
           <Form.Row className="md-0 pd-0">
             <Form.Group as={Col} md="4">
               {this.state.names
@@ -103,6 +117,7 @@ class InvitationForm extends Component {
                 </Form.Group>
               </Form.Group>
             )}
+            {this.state.nameErrorMessage}
             { !this.state.showButtons && (
               <h4 className="text-muted"> Invited ! </h4>
             )}

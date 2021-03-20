@@ -81,13 +81,13 @@ it('GET Test server status', (done) => {
 //   chai.request(apiUrl)
 //     .put('/api/profile')
 //     .send({
-//       userId: '1',
-//       name: 'Macho Mocha',
-//       email: 'mocha11@test.com',
-//       phone: '+1239874560',
-//       currency: 'GBP',
-//       language: 'French',
-//       timezone: 'Asia/Calcutta',
+// userId: '1',
+// name: 'Macho Mocha',
+// email: 'mocha11@test.com',
+// phone: '+1239874560',
+// currency: 'GBP',
+// language: 'French',
+// timezone: 'Asia/Calcutta',
 //     })
 //     .end((err, res) => {
 //       expect(res).to.have.status(200);

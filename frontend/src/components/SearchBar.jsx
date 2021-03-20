@@ -34,6 +34,7 @@ class SearchBar extends Component {
     return (
       <div>
         <Select
+          className="required"
           value={this.state.selectedOption}
           options={searchList}
           onChange={this.handleChange}
