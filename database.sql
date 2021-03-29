@@ -1,5 +1,3 @@
--- docker run -d --name mysql -td -p 3306:3306 -e MYSQL_ROOT_PASSWORD=cmpe273 mysql:5.7
-
 CREATE DATABASE IF NOT EXISTS splitwise;
 USE `splitwise`;
 
@@ -43,16 +41,16 @@ CREATE TABLE `groups_users` (
 DROP TABLE IF EXISTS `bills`;
 
 CREATE TABLE bills (
-    bill_id INT(10) NOT NULL AUTO_INCREMENT,
-    group_id INT(10) NOT NULL,
-    bill_name VARCHAR(255) NOT NULL,
-    bill_paid_by INT(10) NOT NULL,
-    bill_amount FLOAT NOT NULL,
-    bill_created_at TIMESTAMP NOT NULL,
-    settled VARCHAR(1),
-    PRIMARY KEY (bill_id),
-    FOREIGN KEY (group_id) REFERENCES groups(group_id),
-    FOREIGN KEY (bill_paid_by) REFERENCES users(user_id)
+    `bill_id` INT(10) NOT NULL AUTO_INCREMENT,
+    `group_id` INT(10) NOT NULL,
+    `bill_name` VARCHAR(255) NOT NULL,
+    `bill_paid_by` INT(10) NOT NULL,
+    `bill_amount` FLOAT NOT NULL,
+    `bill_created_at` TIMESTAMP NOT NULL,
+    `settled` VARCHAR(1),
+    PRIMARY KEY (`bill_id`),
+    FOREIGN KEY (`group_id`) REFERENCES `groups`(`group_id`),
+    FOREIGN KEY (`bill_paid_by`) REFERENCES `users`(`user_id`)
 );
 
 DROP TABLE IF EXISTS `bill_transaction`;
@@ -68,66 +66,6 @@ CREATE TABLE `bill_transaction` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`),
     FOREIGN KEY (`owed_id`) REFERENCES `users`(`user_id`)
 );
-
-DROP PROCEDURE IF EXISTS `add_bill`;
-DELIMITER //
-CREATE PROCEDURE `add_bill` (
-    in_group_name VARCHAR(255),
-    in_bill_name VARCHAR(255),
-    in_bill_paid_by INT,
-    in_bill_amount DOUBLE
-)
-BEGIN
-    DECLARE _bill_id INT;
-    DECLARE _group_id INT;
-
-    IF EXISTS(SELECT group_id FROM groups WHERE group_name=in_group_name) THEN
-        SELECT group_id INTO _group_id FROM groups WHERE group_name=in_group_name;
-
-        INSERT INTO bills (group_id, bill_name, bill_paid_by, bill_amount, bill_created_at, settled) 
-        VALUES (_group_id,in_bill_name,in_bill_paid_by,in_bill_amount,NOW(),'F');
-
-        SELECT max(bill_id) INTO _bill_id FROM bills WHERE bill_name = in_bill_name;
-
-        INSERT INTO bill_transaction ( bill_id, user_id, owed_id, amount, settled)
-        SELECT b.bill_id,
-                b.bill_paid_by AS user_id,
-                b1.owed_id AS owed_id,
-                (b.bill_amount / b2.no_of_users) AS amount,
-                'N' AS settled
-        FROM bills b 
-        JOIN (
-            SELECT count(gu.user_id) AS no_of_users, 
-                    b.group_id, 
-                    b.bill_id
-            FROM bills b 
-            JOIN groups_users gu
-            ON b.group_id = gu.group_id 
-            AND gu.is_member = 'Y'
-            GROUP BY b.group_id, b.bill_id
-        ) b2 
-        ON b.group_id = b2.group_id 
-        AND b.bill_id = b2.bill_id
-        JOIN
-        (
-            SELECT user_id AS owed_id, 
-                    bills.bill_id
-            FROM bills 
-            JOIN groups_users 
-            ON bills.group_id = groups_users.group_id 
-            AND bills.bill_paid_by <> groups_users.user_id
-            AND groups_users.is_member = 'Y'
-        ) b1 
-        ON b.bill_id = b1.bill_id
-        WHERE b.bill_id = _bill_id;
-
-        SELECT "BILL_ADDED" AS flag;
-    
-    ELSE
-        SELECT 'GROUP_DOES_NOT_EXISTS' AS flag;
-    END IF;
-END //
-DELIMITER ;
 
 DROP PROCEDURE IF EXISTS `Login_Get`;
 DELIMITER //
@@ -166,11 +104,6 @@ CREATE PROCEDURE `Profile_Get` (
     in_user_id  INT
 )
 BEGIN
-    -- IF EXISTS(SELECT user_id FROM users WHERE user_id = in_user_id) THEN
-    --     SELECT user_id, email, password, name, phone, currency, language, timezone, 1 AS flag FROM users WHERE user_id = user_id;
-    -- ELSE
-    --     SELECT 0 AS flag;
-    -- END IF;
     SELECT user_id, email, password, name, phone, currency, language, timezone, image FROM users WHERE user_id = in_user_id;
 END //
 DELIMITER ;
@@ -189,7 +122,6 @@ CREATE PROCEDURE `Profile_Put` (
 )
 BEGIN
     DECLARE count_users INT;
-    -- IF EXISTS(SELECT user_id FROM users WHERE user_id = in_user_id) THEN
     SELECT COUNT(1) INTO count_users FROM users WHERE user_id = in_user_id;
     IF count_users > 0 THEN
         UPDATE users SET email = in_email, name = in_name, phone = in_phone, currency = in_currency, language = in_language, timezone = in_timezone WHERE user_id = in_user_id;
@@ -322,6 +254,66 @@ BEGIN
 
     SELECT 'INVITE_REJECTED' AS flag;
     
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `add_bill`;
+DELIMITER //
+CREATE PROCEDURE `add_bill` (
+    in_group_name VARCHAR(255),
+    in_bill_name VARCHAR(255),
+    in_bill_paid_by INT,
+    in_bill_amount DOUBLE
+)
+BEGIN
+    DECLARE _bill_id INT;
+    DECLARE _group_id INT;
+
+    IF EXISTS(SELECT group_id FROM groups WHERE group_name=in_group_name) THEN
+        SELECT group_id INTO _group_id FROM groups WHERE group_name=in_group_name;
+
+        INSERT INTO bills (group_id, bill_name, bill_paid_by, bill_amount, bill_created_at, settled) 
+        VALUES (_group_id,in_bill_name,in_bill_paid_by,in_bill_amount,NOW(),'F');
+
+        SELECT max(bill_id) INTO _bill_id FROM bills WHERE bill_name = in_bill_name;
+
+        INSERT INTO bill_transaction ( bill_id, user_id, owed_id, amount, settled)
+        SELECT b.bill_id,
+                b.bill_paid_by AS user_id,
+                b1.owed_id AS owed_id,
+                (b.bill_amount / b2.no_of_users) AS amount,
+                'N' AS settled
+        FROM bills b 
+        JOIN (
+            SELECT count(gu.user_id) AS no_of_users, 
+                    b.group_id, 
+                    b.bill_id
+            FROM bills b 
+            JOIN groups_users gu
+            ON b.group_id = gu.group_id 
+            AND gu.is_member = 'Y'
+            GROUP BY b.group_id, b.bill_id
+        ) b2 
+        ON b.group_id = b2.group_id 
+        AND b.bill_id = b2.bill_id
+        JOIN
+        (
+            SELECT user_id AS owed_id, 
+                    bills.bill_id
+            FROM bills 
+            JOIN groups_users 
+            ON bills.group_id = groups_users.group_id 
+            AND bills.bill_paid_by <> groups_users.user_id
+            AND groups_users.is_member = 'Y'
+        ) b1 
+        ON b.bill_id = b1.bill_id
+        WHERE b.bill_id = _bill_id;
+
+        SELECT "BILL_ADDED" AS flag;
+    
+    ELSE
+        SELECT 'GROUP_DOES_NOT_EXISTS' AS flag;
+    END IF;
 END //
 DELIMITER ;
 
@@ -601,173 +593,3 @@ BEGIN
 
 END //
 DELIMITER ;
----------------------------------------------------------------------------------------------
--- to get balances
-SELECT 
-    final2.logged_in_user,
-    MAX(CASE WHEN final2.logged_in_user=u.user_id THEN u.name END) AS logged_in_user_name,
-    final2.checking_with_user,
-    MAX(CASE WHEN final2.checking_with_user=u.user_id THEN u.name END) AS checking_with_user_name,
-    CASE 
-        WHEN final2.net_amt > 0 THEN 'COLLECT' 
-        WHEN final2.net_amt < 0 THEN 'PAY' 
-        ELSE 'SETTLED'
-        END AS collect_or_pay,
-    final2.net_amt
-FROM (
-    SELECT 
-        CASE WHEN net_amt > 0 THEN s1_user_id ELSE s2_owed_id END AS logged_in_user,
-        -- u.name AS logged_in_user_name,
-        CASE WHEN net_amt > 0 THEN s1_owed_id ELSE s2_user_id END AS checking_with_user,
-        -- CASE WHEN net_amt > 0 THEN 'COLLECT' ELSE 'PAY' END AS collect_or_pay,
-        net_amt
-    FROM (
-        SELECT 
-            s1.user_id as s1_user_id,
-            s1.owed_id as s1_owed_id,
-            s2.user_id as s2_user_id, 
-            s2.owed_id as s2_owed_id,
-            s1.collect_amount - s2.owed_amount as net_amt
-        FROM (
-            SELECT 
-            IFNULL(sum(amount),0) AS collect_amount, user_id, owed_id
-            FROM bill_transaction
-            WHERE user_id=1 AND owed_id=7
-        ) AS s1 
-        JOIN (
-            SELECT IFNULL(sum(amount),0) AS owed_amount, user_id, owed_id
-            FROM bill_transaction
-            WHERE user_id=7 AND owed_id=1
-        ) AS s2
-    ) AS final
-) AS final2
-JOIN users u 
-WHERE final2.logged_in_user IS NOT NULL
-GROUP BY
-final2.logged_in_user,
-final2.checking_with_user,
-CASE 
-    WHEN final2.net_amt > 0 THEN 'COLLECT' 
-    WHEN final2.net_amt < 0 THEN 'PAY' 
-    ELSE 'SETTLED'
-    END,
-final2.net_amt;
--- ON final2.logged_in_user=u.user_id
--- AND final2.checking_with_user = u.user_id;
-
--- to get all users mapping
-SELECT DISTINCT gu2.user_id AS owed_id
-FROM groups_users gu1 
-JOIN groups_users gu2 
-ON gu1.user_id <> gu2.user_id AND gu1.group_id = gu2.group_id;
-
--- to settle
-INSERT INTO bill_transaction (bill_id, user_id, owed_id, amount) VALUES (-1, 2, 1, 94.25);
-
--- get recent activity
-SELECT b.bill_id, 
-        b.bill_name, 
-        b.bill_amount, 
-        g.group_name, 
-        b.bill_paid_by, 
-        gu.user_id,
-        u.name,
-        CASE 
-            WHEN gu.user_id = b.bill_paid_by 
-            THEN 'GET' 
-            ELSE 'PAY' 
-        END AS pay_get, 
-        CASE 
-            WHEN gu.user_id = b.bill_paid_by 
-            THEN (b.bill_amount / gu_count.no_of_users) *  (gu_count.no_of_users - 1)
-            ELSE (b.bill_amount / (gu_count.no_of_users))
-        END AS split_amount,
-        b.bill_created_at
-FROM bills b
-LEFT JOIN groups g ON b.group_id = g.group_id
-LEFT JOIN groups_users gu ON b.group_id = gu.group_id
-LEFT JOIN users u ON gu.user_id = u.user_id 
-LEFT JOIN (
-    SELECT count(user_id) AS no_of_users,
-            group_id
-    FROM groups_users gu
-    GROUP BY group_id
-) gu_count ON b.group_id = gu_count.group_id
-WHERE u.user_id = 3
-ORDER BY b.bill_created_at DESC ;
-
-------------------------------------------------------
-SELECT 
-    gu.group_id, 
-    s1.user_id AS user_id, 
-    s1.is_member AS user_id_member, 
-    gu.user_id AS owed_id, 
-    gu.is_member AS owed_id_member, 
-    gu.settled 
-FROM groups_users gu 
-JOIN (
-    SELECT 
-        group_id,
-        user_id,
-        is_member 
-    FROM groups_users
-    WHERE user_id=1
-    AND is_member='Y'
-) AS s1 ON gu.group_id IN (s1.group_id) AND gu.user_id=2
-WHERE gu.is_member='Y';
-------------------------------------------------------
-SELECT
-    bt.bill_id,
-    bt.user_id,
-    bt.owed_id,
-    bt.settled
-    FROM bill_transaction bt
-    WHERE bt.user_id=1 AND bt.owed_id=2
-UNION ALL
-SELECT
-    bt.bill_id,
-    bt.user_id,
-    bt.owed_id,
-    bt.settled
-    FROM bill_transaction bt
-    WHERE bt.user_id=2 AND bt.owed_id=1;
-------------------------------------------------------
-SELECT DISTINCT final.settled FROM (
-SELECT 
-    bt.settled 
-FROM bill_transaction bt
-JOIN bills b ON bt.bill_id=b.bill_id
-JOIN groups g ON b.group_id = g.group_id
-WHERE g.group_name = 'AB' AND bt.user_id=3
-UNION ALL 
-SELECT 
-    bt.settled 
-FROM bill_transaction bt
-JOIN bills b ON bt.bill_id=b.bill_id
-JOIN groups g ON b.group_id = g.group_id
-WHERE g.group_name = 'AB' AND bt.owed_id=3
-) AS final
-
-------------------------------------------------------
-SELECT 
-  bt.user_id, 
-  MAX(CASE WHEN bt.user_id=u.user_id THEN u.name END) AS user1,
-  bt.owed_id, 
-  MAX(CASE WHEN bt.owed_id=u.user_id THEN u.name END) AS user2,
-  g.group_id, 
-  bt.amount, 
-  bt.settled,
-  bt.bill_id 
-FROM bill_transaction bt
-JOIN bills b ON bt.bill_id=b.bill_id
-JOIN groups g ON b.group_id = g.group_id
-JOIN users u
-WHERE g.group_name = 'Trip'
-GROUP BY
-  bt.user_id, 
-  bt.owed_id, 
-  g.group_id, 
-  bt.amount, 
-  bt.settled,
-  bt.bill_id;
----------------------------------------------------------------------------------------------

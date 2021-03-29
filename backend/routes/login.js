@@ -10,7 +10,9 @@ router.post('/', (req, res) => {
   pool.query(sql).then((rows) => {
     const result = rows[0];
     if (result && result.length > 0 && result[0][0].flag === 1) {
-      if (bcrypt.compare(req.body.password, result[0][0].student_password)) {
+      const isMatch = bcrypt.compare(req.body.password, result[0][0].student_password);
+      console.log(`isMatch : ${isMatch}`);
+      if (isMatch) {
         res.cookie('cookie', 'admin', { maxAge: 900000, httpOnly: false, path: '/' });
         req.session.user = req.body.email;
         const userObj = {

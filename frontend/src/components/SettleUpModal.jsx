@@ -14,6 +14,7 @@ class SettleUpModal extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+    document.title = 'Splitwise';
   }
 
   onChange = (e) => {

@@ -14,6 +14,7 @@ class NavBar extends Component {
     this.state = {
       name: localStorage.getItem('name'),
     };
+    document.title = 'Splitwise';
   }
 
   // handle logout to destroy the cookie
@@ -30,7 +31,8 @@ class NavBar extends Component {
       <Dropdown>
         <Dropdown.Toggle variant="outline-success" id="dropdown-basic">
           <Image src={userIcon} style={{ width: 20, height: 'auto' }} />
-&nbsp;Hi,
+          &nbsp;Hi,
+          &nbsp;
           {this.state.name}
           !
         </Dropdown.Toggle>

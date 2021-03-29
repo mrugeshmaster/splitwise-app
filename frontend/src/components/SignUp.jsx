@@ -13,11 +13,10 @@ import SplitwiseImage from '../images/logo.svg';
 class SignUp extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.handleNameChange = this.handleNameChange.bind(this);
-    this.handleEmailChange = this.handleEmailChange.bind(this);
-    this.handlePasswordChange = this.handlePasswordChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.state = {
+      validated: false,
+    };
+    document.title = 'Splitwise';
   }
 
   handleNameChange = (e) => {
@@ -40,18 +39,27 @@ class SignUp extends Component {
 
   handleSubmit = (e) => {
     // prevent page from refresh
-    e.preventDefault();
-    const data = {
-      name: this.state.name,
-      email: this.state.email,
-      password: this.state.password,
-    };
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setState({
+        validated: true,
+      });
+    } else {
+      e.preventDefault();
+      const data = {
+        name: this.state.name,
+        email: this.state.email,
+        password: this.state.password,
+      };
 
-    this.props.userSignUp(data);
+      this.props.userSignUp(data);
 
-    this.setState({
-      signUp: true,
-    });
+      this.setState({
+        signUp: true,
+      });
+    }
   }
 
   handleClear = () => {
@@ -90,20 +98,48 @@ class SignUp extends Component {
               <img src={SplitwiseImage} className="img-fluid rounded float-right" style={{ height: 200, width: 200 }} alt="Splitwise" />
             </Col>
             <Col>
-              <Form onSubmit={this.handleSubmit}>
+              <Form noValidate validated={this.state.validated} onSubmit={this.handleSubmit}>
                 <Form.Group controlId="formBasicName">
                   <Form.Label>Full Name</Form.Label>
-                  <Form.Control type="text" name="name" value={this.state.name} placeholder="Enter Name" onChange={this.handleNameChange} required />
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={this.state.name}
+                    placeholder="Enter Name"
+                    onChange={this.handleNameChange}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Please enter a Name.
+                  </Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group controlId="formBasicEmail">
                   <Form.Label>Email address</Form.Label>
-                  <Form.Control type="email" name="email" value={this.state.email} placeholder="Enter email" onChange={this.handleEmailChange} required />
+                  <Form.Control
+                    type="text"
+                    name="email"
+                    value={this.state.email}
+                    placeholder="Enter email"
+                    onChange={this.handleEmailChange}
+                    pattern="^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$'%&*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])$"
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Please enter a valid email.
+                  </Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group controlId="formBasicPassword">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control type="password" name="password" value={this.state.password} placeholder="Password" onChange={this.handlePasswordChange} required />
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={this.state.password}
+                    placeholder="Password"
+                    onChange={this.handlePasswordChange}
+                    required
+                  />
                 </Form.Group>
 
                 <Button variant="success" type="submit">

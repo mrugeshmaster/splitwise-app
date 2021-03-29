@@ -14,7 +14,6 @@ class Login extends Component {
     super(props);
     // maintain the state required for this component
     this.state = {};
-    // this.handleEmailChange = this.handleEmailChange.bind(this);
   }
 
   handleEmailChange = (e) => {
